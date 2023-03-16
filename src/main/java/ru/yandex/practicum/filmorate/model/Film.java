@@ -14,7 +14,7 @@ public class Film {
 
     @Positive
     @EqualsAndHashCode.Exclude
-    private Integer id;
+    private Long id;
     @NotBlank
     private String name;
     @Size(max = 200)

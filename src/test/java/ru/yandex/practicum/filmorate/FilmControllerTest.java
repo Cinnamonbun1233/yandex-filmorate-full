@@ -10,7 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.InMemoryStorage;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 
 import java.util.List;
 
@@ -23,13 +23,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class FilmControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    InMemoryFilmStorage inMemoryFilmStorage;
 
     @BeforeEach
     public void setUp() {
-        InMemoryStorage.getInstance().deleteAllData();
+        inMemoryFilmStorage.deleteAllData();
     }
 
     // GET
@@ -90,7 +92,7 @@ public class FilmControllerTest {
                 .andExpect(status().is(400));
 
         // LongDescription
-        String longDescriptionFilm =
+        String LongDescriptionFilm =
                 "{\"name\": \"Movie1\", " +
                         "\"description\": \"Description11111111111111111111111111111111111111111111111111111111" +
                         "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
@@ -100,7 +102,7 @@ public class FilmControllerTest {
 
         mockMvc.perform(post("/films")
                         .contentType("application/json")
-                        .content(longDescriptionFilm))
+                        .content(LongDescriptionFilm))
                 .andExpect(status().is(400));
 
         // InvalidReleaseDate
@@ -195,8 +197,7 @@ public class FilmControllerTest {
     public void putFilmFail_EmptyId_IDNotFound_FilmHasATwin() {
 
         // ID empty
-        String emptyFilm =
-                        "{\"id\" : , " +
+        String emptyIdFilm =
                         "{\"name\": \"Movie1\", " +
                         "\"description\": \"Description1\", " +
                         "\"releaseDate\": \"2000-01-01\", " +
@@ -204,7 +205,7 @@ public class FilmControllerTest {
 
         mockMvc.perform(put("/films")
                         .contentType("application/json")
-                        .content(emptyFilm))
+                        .content(emptyIdFilm))
                 .andExpect(status().is(400));
 
         // ID not found

@@ -10,7 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.util.List;
 
@@ -25,13 +25,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    MockMvc mockMvc;
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    InMemoryUserStorage inMemoryUserStorage;
 
     @BeforeEach
     public void setUp() {
-        InMemoryStorage.getInstance().deleteAllData();
+        inMemoryUserStorage.deleteAllData();
     }
 
     // GET
