@@ -15,7 +15,7 @@
 ### Requst expamples
 
 #### top 10 fiilms
-```roomsql
+``` sql
 SELECT
     *
 FROM
@@ -35,7 +35,7 @@ WHERE
 ```
 
 #### approved friends of a user
-```roomsql
+``` sql
 SELECT
     *
 FROM
