@@ -56,6 +56,7 @@ public class UserControllerTest {
                 .andExpect(status().is(201));
 
         String contentAsString = mockMvc.perform(get("/users")).andReturn().getResponse().getContentAsString();
+
         List<User> userList = objectMapper.readValue(contentAsString, new TypeReference<List<User>>() {});
         assertEquals(1,userList.size());
 
