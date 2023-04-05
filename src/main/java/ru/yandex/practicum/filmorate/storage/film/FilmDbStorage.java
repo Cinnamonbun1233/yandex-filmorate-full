@@ -70,14 +70,14 @@ public class FilmDbStorage implements FilmStorage {
         Mpa mpa = Mpa.getMpa(film.getMpa());
         Long mpaId = (mpa == null ? null : mpa.getId());
 
-        jdbcTemplate.update(sqlQuery
-                , film.getName()
-                , film.getDescription()
-                , film.getReleaseDate()
-                , film.getDuration()
-                , film.getRate()
-                , mpaId
-                , film.getId());
+        jdbcTemplate.update(sqlQuery,
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getRate(),
+                mpaId,
+                film.getId());
 
         // genres of film
         updateGenres(film);
@@ -148,7 +148,9 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "INSERT INTO filmorate_like (film_id, user_id) VALUES (?, ?)";
         try {
             jdbcTemplate.update(sqlQuery, filmId, userId);
-        } catch (DuplicateKeyException e) {}
+        } catch (DuplicateKeyException e) {
+            // Do nothing. Adding like is idempotent
+        }
 
     }
 
@@ -217,9 +219,9 @@ public class FilmDbStorage implements FilmStorage {
         // genre
         String sqlQuery = "UPDATE genre SET name = ? WHERE id = ?";
 
-        jdbcTemplate.update(sqlQuery
-                , genre.getName()
-                , genre.getId());
+        jdbcTemplate.update(sqlQuery,
+                genre.getName(),
+                genre.getId());
 
         return genre;
 
@@ -369,9 +371,9 @@ public class FilmDbStorage implements FilmStorage {
 
         Map<Long, TreeSet<Genre>> filmsGenres = new HashMap<>();
         while (sqlRowSet.next()) {
-            Long film_id = sqlRowSet.getLong("film_id");
-            Long genre_id = sqlRowSet.getLong("genre_id");
-            filmsGenres.computeIfAbsent(film_id, v -> new TreeSet<>()).add(allGenresListMap.get(genre_id));
+            Long filmId = sqlRowSet.getLong("film_id");
+            Long genreId = sqlRowSet.getLong("genre_id");
+            filmsGenres.computeIfAbsent(filmId, v -> new TreeSet<>()).add(allGenresListMap.get(genreId));
         }
 
         // set genres to film
