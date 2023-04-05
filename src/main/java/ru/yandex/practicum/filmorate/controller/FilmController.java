@@ -21,7 +21,7 @@ import java.util.Set;
 public class FilmController {
 
     private final FilmService filmService;
-    private final String TOP_FILMS_COUNT = "10";
+    private final String topFilmsSize = "10";
 
     @Autowired
     public FilmController(FilmService filmService) {
@@ -95,7 +95,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = TOP_FILMS_COUNT) @Positive Integer count) {
+    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = topFilmsSize) @Positive Integer count) {
 
         return filmService.getMostPopularFilms(count);
 
