@@ -149,7 +149,7 @@ public class UserControllerTest {
                 .andExpect(status().is(201));
 
         // EmailAlreadyUsed
-        String EmailAlreadyUsedUser =
+        String emailAlreadyUsedUser =
                         "{\"login\": \"login2\", " +
                         "\"name\": \"Name\", " +
                         "\"email\": \"mail@mail.ru\", " +
@@ -157,11 +157,11 @@ public class UserControllerTest {
 
         mockMvc.perform(post("/users")
                         .contentType("application/json")
-                        .content(EmailAlreadyUsedUser))
+                        .content(emailAlreadyUsedUser))
                 .andExpect(status().is(409));
 
         // LoginAlreadyUsed
-        String LoginAlreadyUsedUser =
+        String loginAlreadyUsedUser =
                         "{\"login\": \"login\", " +
                         "\"name\": \"Name\", " +
                         "\"email\": \"mail1@mail.ru\", " +
@@ -169,7 +169,7 @@ public class UserControllerTest {
 
         mockMvc.perform(post("/users")
                         .contentType("application/json")
-                        .content(LoginAlreadyUsedUser))
+                        .content(loginAlreadyUsedUser))
                 .andExpect(status().is(409));
 
     }
@@ -210,7 +210,7 @@ public class UserControllerTest {
     @SneakyThrows
     public void putUser_IdNotFound_IdIsEmpty() {
 
-        String IdIsEmptyUser =
+        String idIsEmptyUser =
                         "{\"login\": \"login\", " +
                         "\"name\": \"Name\", " +
                         "\"email\": \"mail@mail.ru\", " +
@@ -218,7 +218,7 @@ public class UserControllerTest {
 
         mockMvc.perform(put("/users")
                         .contentType("application/json")
-                        .content(IdIsEmptyUser))
+                        .content(idIsEmptyUser))
                 .andExpect(status().is(400));
 
         String badIdUser =
