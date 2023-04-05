@@ -130,7 +130,7 @@ public class FilmService {
 
         boolean hasLike = filmStorage.hasLike(filmId, userId);
         if (!hasLike) {
-            throw new ResourceNotFoundException(String.format("Like of user %d to film %d not found", filmId ,userId));
+            throw new ResourceNotFoundException(String.format("Like of user %d to film %d not found", filmId , userId));
         }
 
         // delete like
