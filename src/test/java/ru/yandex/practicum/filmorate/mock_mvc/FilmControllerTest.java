@@ -92,7 +92,7 @@ public class FilmControllerTest {
                 .andExpect(status().is(400));
 
         // LongDescription
-        String LongDescriptionFilm =
+        String longDescriptionFilm =
                 "{\"name\": \"Movie1\", " +
                         "\"description\": \"Description11111111111111111111111111111111111111111111111111111111" +
                         "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
@@ -102,7 +102,7 @@ public class FilmControllerTest {
 
         mockMvc.perform(post("/films")
                         .contentType("application/json")
-                        .content(LongDescriptionFilm))
+                        .content(longDescriptionFilm))
                 .andExpect(status().is(400));
 
         // InvalidReleaseDate
