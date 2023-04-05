@@ -147,7 +147,7 @@ public class InMemoryUserStorage implements UserStorage {
         emailUser.clear();
         loginUser.clear();
         friends.clear();
-        userId = 0L;
+        userId = 1L;
     }
 
 

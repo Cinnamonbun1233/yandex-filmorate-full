@@ -21,7 +21,7 @@ public class FilmService {
     private final UserStorage userStorage;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage) {
+    public FilmService(FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
@@ -255,7 +255,11 @@ public class FilmService {
 
     private void filmHasUnknownMpa(Film film) {
 
-        Long mpaId = film.getMpa().getId();
+        Mpa mpa = film.getMpa();
+        if (mpa == null) {
+            return;
+        }
+        Long mpaId = mpa.getId();
         if (Mpa.getMpa(mpaId) == null) {
             throw new ResourceNotFoundException("MPA with id " + mpaId + " not found");
         }
