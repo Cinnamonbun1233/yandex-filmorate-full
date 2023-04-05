@@ -63,7 +63,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     // FILMS - Checking
     @Override
-    public boolean hasTwin(Film film){
+    public boolean hasTwin(Film film) {
 
         if (getFilms().contains(film)) {
             return idFilmMap.get(film.getId()) == null;
@@ -182,13 +182,13 @@ public class InMemoryFilmStorage implements FilmStorage {
 
 
     // PRIVATE
-    private Long getFilmId(){
+    private Long getFilmId() {
 
         return ++filmId;
 
     }
 
-    private Long getGenreId(){
+    private Long getGenreId() {
 
         return ++genreId;
 
