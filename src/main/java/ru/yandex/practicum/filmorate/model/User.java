@@ -28,5 +28,4 @@ public class User implements Comparable<User> {
         return Long.compare(this.getId(), other.getId());
     }
 
-
 }

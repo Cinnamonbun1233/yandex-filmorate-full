@@ -7,7 +7,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 @Getter
-public class Mpa implements Comparable<Mpa>{
+public class Mpa implements Comparable<Mpa> {
 
     public static final Mpa G       = new Mpa(1L, "G");
     public static final Mpa PG      = new Mpa(2L, "PG");
@@ -78,4 +78,5 @@ public class Mpa implements Comparable<Mpa>{
     public int compareTo(@NotNull Mpa other) {
         return Long.compare(this.id, other.id);
     }
+
 }
