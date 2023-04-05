@@ -18,7 +18,7 @@ import java.util.TreeSet;
 
 @Repository
 @SuppressWarnings("unused")
-public class UserDbStorage implements UserStorage{
+public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
 

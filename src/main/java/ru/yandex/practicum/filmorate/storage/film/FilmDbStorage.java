@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @SuppressWarnings("unused")
-public class FilmDbStorage implements FilmStorage{
+public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
