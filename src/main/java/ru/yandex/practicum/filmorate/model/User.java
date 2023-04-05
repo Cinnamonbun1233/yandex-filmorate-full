@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.jetbrains.annotations.NotNull;
@@ -8,6 +9,7 @@ import javax.validation.constraints.*;
 import java.time.LocalDate;
 
 @Data
+@Builder
 public class User implements Comparable<User> {
 
     @Positive

@@ -5,13 +5,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import ru.yandex.practicum.filmorate.exception.FilmHasATwinException;
 import ru.yandex.practicum.filmorate.exception.IncorrectIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -20,11 +20,13 @@ import java.util.Set;
 @SuppressWarnings("unused")
 public class FilmController {
 
-    //private final String TOP_FILMS_COUNT = new Properties().getProperty("filmorate.top-films-count");
+    private final FilmService filmService;
     private final String TOP_FILMS_COUNT = "10";
 
     @Autowired
-    FilmService filmService;
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     // FILMS
     @PostMapping
@@ -93,18 +95,10 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Set<Film> getMostPopularFilms(@RequestParam(defaultValue = TOP_FILMS_COUNT) @Positive Integer count) {
+    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = TOP_FILMS_COUNT) @Positive Integer count) {
 
         return filmService.getMostPopularFilms(count);
 
-    }
-
-
-    // ERRORS HANDLING
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleFilmHasATwinException(final FilmHasATwinException e) {
-        return new ErrorResponse(HttpStatus.CONFLICT, "Incorrect operation", e.getMessage());
     }
 
 }

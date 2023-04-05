@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EmailLoginAlreadyUsed;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
@@ -12,8 +13,12 @@ import java.util.*;
 @Service
 public class UserService {
 
+    private final UserStorage userStorage;
+
     @Autowired
-    UserStorage userStorage;
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     // USERS
     public User addUser(User user) {
@@ -122,7 +127,6 @@ public class UserService {
 
         // add connection
         userStorage.addFriend(userId, friendId);
-        userStorage.addFriend(friendId, userId);
 
     }
 
@@ -185,9 +189,7 @@ public class UserService {
 
         // delete connection
         boolean connection1Deleted = userStorage.deleteFriend(userId, friendId);
-        boolean connection2Deleted = userStorage.deleteFriend(friendId, userId);
         assert connection1Deleted;
-        assert connection2Deleted;
 
     }
 

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,17 +11,20 @@ import java.util.stream.Collectors;
 public class InMemoryFilmStorage implements FilmStorage {
 
     private Long filmId = 0L;
+    private Long genreId = 0L;
     private final Map<Long, Film> idFilmMap = new HashMap<>();              // k - filmId, v - film
     private final Map<Long, Set<Long>> likesMap = new HashMap<>();          // k - filmId, v - set of userId
     private final Comparator<Long> filmComparator = ((filmId1, filmId2) ->
             likesMap.getOrDefault(filmId2, Collections.EMPTY_SET).size()
                     - likesMap.getOrDefault(filmId1, Collections.EMPTY_SET).size());
     private final TreeSet<Long> filmsSet = new TreeSet<>(filmComparator);    // films ids sorted by popularity
-
+    private final Map<Long, Genre> idGenreMap = new HashMap<>();             // f - genreId, v - genre
 
     // FILMS - CRUD
     @Override
     public Film addFilm(Film film) {
+
+        changeGenresToValid(film);
 
         Long currentId = getFilmId();
         film.setId(currentId);
@@ -35,6 +39,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film updateFilm(Film film) {
 
+        changeGenresToValid(film);
+
         idFilmMap.put(film.getId(), film);
         return film;
 
@@ -48,18 +54,21 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Film> getFilms() {
+    public TreeSet<Film> getFilms() {
 
-        return new HashSet<>(idFilmMap.values());
+        return new TreeSet<>(idFilmMap.values());
 
     }
 
 
     // FILMS - Checking
     @Override
-    public boolean hasFilm(Film film){
+    public boolean hasTwin(Film film){
 
-        return getFilms().contains(film);
+        if (getFilms().contains(film)) {
+            return idFilmMap.get(film.getId()) == null;
+        }
+        return false;
 
     }
 
@@ -90,9 +99,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Set<Film> getMostPopularFilms(Integer count) {
+    public List<Film> getMostPopularFilms(Integer count) {
 
-        return filmsSet.stream().limit(count).map(this::getFilm).collect(Collectors.toSet());
+        return filmsSet.stream().limit(count).map(this::getFilm).collect(Collectors.toList());
 
     }
 
@@ -102,6 +111,60 @@ public class InMemoryFilmStorage implements FilmStorage {
     public boolean hasLike(Long filmId, Long userId) {
 
         return likesMap.getOrDefault(filmId, Collections.EMPTY_SET).contains(userId);
+
+    }
+
+
+    // GENRES - CRUD
+    @Override
+    public Genre addGenre(Genre genre) {
+
+        Long currentId = getGenreId();
+        genre.setId(currentId);
+
+        idGenreMap.put(currentId, genre);
+
+        return genre;
+    }
+
+    @Override
+    public Genre updateGenre(Genre genre) {
+
+        idGenreMap.put(genre.getId(), genre);
+        return genre;
+
+    }
+
+    @Override
+    public Genre getGenre(Long id) {
+
+        return idGenreMap.get(id);
+
+    }
+
+    @Override
+    public Set<Genre> getGenres() {
+
+        TreeSet<Genre> res = new TreeSet<>(Comparator.comparingLong(Genre::getId));
+        res.addAll(idGenreMap.values());
+        return res;
+
+    }
+
+
+    // GENRES - Checking
+    @Override
+    public boolean hasGenre(Genre genre) {
+
+        return getGenres().contains(genre);
+
+    }
+
+    @Override
+    public Set<Long> getUnknownGenreIds(Set<Long> genreIds) {
+
+        genreIds.removeAll(idGenreMap.keySet());
+        return genreIds;
 
     }
 
@@ -123,6 +186,22 @@ public class InMemoryFilmStorage implements FilmStorage {
 
         return ++filmId;
 
+    }
+
+    private Long getGenreId(){
+
+        return ++genreId;
+
+    }
+
+    private void changeGenresToValid(Film film) {
+
+        Set<Genre> genres = film.getGenres()
+                .stream()
+                .map(e -> idGenreMap.get(e.getId()))
+                .collect(Collectors.toSet());
+
+        film.setUpGenres(genres);
     }
 
 }

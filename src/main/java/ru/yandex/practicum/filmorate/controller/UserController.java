@@ -21,8 +21,12 @@ import java.util.TreeSet;
 @SuppressWarnings("unused")
 public class UserController {
 
+    private final UserService userService;
+
     @Autowired
-    UserService userService;
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
     // USERS
     @PostMapping
