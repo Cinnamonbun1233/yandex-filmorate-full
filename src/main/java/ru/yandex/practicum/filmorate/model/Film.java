@@ -15,7 +15,7 @@ import java.util.TreeSet;
 
 @Data
 @Builder
-public class Film implements Comparable<Film>{
+public class Film implements Comparable<Film> {
 
     @Positive
     @EqualsAndHashCode.Exclude
