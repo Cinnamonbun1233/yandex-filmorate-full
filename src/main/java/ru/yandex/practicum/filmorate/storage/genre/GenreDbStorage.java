@@ -71,7 +71,6 @@ public class GenreDbStorage implements GenreStorage {
 
     }
 
-
     // Checking
     @Override
     public boolean hasGenre(Genre genre) {
