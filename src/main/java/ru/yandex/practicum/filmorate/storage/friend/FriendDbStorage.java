@@ -13,7 +13,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
-public class FriendDbStorage implements FriendStorage{
+public class FriendDbStorage implements FriendStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
