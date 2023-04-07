@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -15,22 +14,15 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 @Repository
-@Primary
+@RequiredArgsConstructor
 @SuppressWarnings("unused")
 public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
-
     // USERS - CRUD
-
     @Override
     public User addUser(User user) {
 
@@ -80,17 +72,15 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public TreeSet<User> getUsers() {
+    public List<User> getUsers() {
 
-        String sqlQuery = "SELECT id, email, login, name, birthday FROM filmorate_user";
-        List<User> userList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeUser(rs));
-        return new TreeSet<>(userList);
+        String sqlQuery = "SELECT id, email, login, name, birthday FROM filmorate_user ORDER BY id";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeUser(rs));
 
     }
 
 
     // USERS - Checking
-
     @Override
     public boolean emailAlreadyUsed(String email) {
 
@@ -128,49 +118,7 @@ public class UserDbStorage implements UserStorage {
     }
 
 
-    // FRIENDS - CRUD
-
-    @Override
-    public void addFriend(Long userId, Long friendId) {
-
-        String sqlQuery = "INSERT INTO friends(user_from, user_to) values (?, ?)";
-        jdbcTemplate.update(sqlQuery, userId, friendId);
-
-    }
-
-    @Override
-    public TreeSet<User> getFriends(Long id) {
-
-        String sqlQuery = "SELECT id, email, login, name, birthday FROM filmorate_user WHERE id IN " +
-                "(SELECT user_to FROM friends WHERE user_from = ?)";
-        List<User> userList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeUser(rs), id);
-        return new TreeSet<>(userList);
-
-    }
-
-    @Override
-    public boolean deleteFriend(Long userId, Long friendId) {
-
-        String sqlQuery = "DELETE FROM friends WHERE user_from = ? AND user_to = ?";
-        return jdbcTemplate.update(sqlQuery, userId, friendId) > 0;
-
-    }
-
-
-    // FRIENDS - Checking
-
-    @Override
-    public boolean hasConnection(Long userId, Long friendId) {
-
-        String sql = "SELECT count(*) FROM friends WHERE user_from = ? AND user_to = ?";
-        int count = jdbcTemplate.queryForObject(sql, Integer.class, userId, friendId);
-        return (count > 0);
-
-    }
-
-
     // RESTORE
-
     @Override
     public void deleteAllData() {
 
@@ -185,7 +133,6 @@ public class UserDbStorage implements UserStorage {
 
 
     // PRIVATE
-
     private User makeUser(ResultSet resultSet) throws SQLException {
 
         // i don't like this code but dunno how to do it better

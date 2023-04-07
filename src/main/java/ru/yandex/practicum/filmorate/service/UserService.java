@@ -1,23 +1,21 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EmailLoginAlreadyUsed;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
     private final UserStorage userStorage;
-
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    private final FriendStorage friendStorage;
 
     // USERS
     public User addUser(User user) {
@@ -100,7 +98,7 @@ public class UserService {
 
     }
 
-    public TreeSet<User> getUsers() {
+    public List<User> getUsers() {
 
         return userStorage.getUsers();
 
@@ -125,11 +123,11 @@ public class UserService {
         }
 
         // add connection
-        userStorage.addFriend(userId, friendId);
+        friendStorage.addFriend(userId, friendId);
 
     }
 
-    public TreeSet<User> getUsersFriends(Long id) {
+    public List<User> getUsersFriends(Long id) {
 
         // checking
         User user = userStorage.getUser(id);
@@ -138,10 +136,10 @@ public class UserService {
         }
 
         // return user's friends
-        return userStorage.getFriends(id);
+        return friendStorage.getFriends(id);
     }
 
-    public TreeSet<User> getCommonFriends(Long userId, Long otherUserId) {
+    public List<User> getCommonFriends(Long userId, Long otherUserId) {
 
         // checking
         User user = userStorage.getUser(userId);
@@ -158,8 +156,8 @@ public class UserService {
         }
 
         // return common friends
-        TreeSet<User> firstUsersFriends = getUsersFriends(userId);
-        TreeSet<User> secondUsersFriends = getUsersFriends(otherUserId);
+        List<User> firstUsersFriends = getUsersFriends(userId);
+        List<User> secondUsersFriends = getUsersFriends(otherUserId);
         firstUsersFriends.retainAll(secondUsersFriends);
         return firstUsersFriends;
 
@@ -181,13 +179,13 @@ public class UserService {
             throw new ResourceNotFoundException(notFoundResources);
         }
 
-        boolean hasConnection = userStorage.hasConnection(userId, friendId);
+        boolean hasConnection = friendStorage.hasConnection(userId, friendId);
         if (!hasConnection) {
             throw new ResourceNotFoundException("User " + friendId + " is not a friend of user " + userId);
         }
 
         // delete connection
-        boolean connection1Deleted = userStorage.deleteFriend(userId, friendId);
+        boolean connection1Deleted = friendStorage.deleteFriend(userId, friendId);
         assert connection1Deleted;
 
     }

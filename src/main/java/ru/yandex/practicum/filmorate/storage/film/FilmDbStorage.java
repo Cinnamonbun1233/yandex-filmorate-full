@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Primary;
-import org.springframework.dao.DuplicateKeyException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -21,16 +19,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
-@Primary
+@RequiredArgsConstructor
 @SuppressWarnings("unused")
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-    }
 
     // FILMS - CRUD
     @Override
@@ -97,7 +90,7 @@ public class FilmDbStorage implements FilmStorage {
             // film
             Film film = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeFilm(rs), id);
             // genres
-            linkGenresToFilms(new ArrayList<>(Arrays.asList(film)));
+            linkGenresToFilms(List.of(film));
             return film;
         } catch (IncorrectResultSizeDataAccessException e) {
             return null;
@@ -106,16 +99,16 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public TreeSet<Film> getFilms() {
+    public List<Film> getFilms() {
 
         // films
-        String sqlQuery = "SELECT id, name, description, release_date, duration, rate, mpa FROM film";
+        String sqlQuery = "SELECT id, name, description, release_date, duration, rate, mpa FROM film ORDER BY id";
         List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
 
         // genres
         linkGenresToAllFilms(filmList);
 
-        return new TreeSet<>(filmList);
+        return filmList;
 
     }
 
@@ -142,28 +135,6 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
-
-    // LIKES - CRUD
-    @Override
-    public void addLike(Long filmId, Long userId) {
-
-        String sqlQuery = "INSERT INTO filmorate_like (film_id, user_id) VALUES (?, ?)";
-        try {
-            jdbcTemplate.update(sqlQuery, filmId, userId);
-        } catch (DuplicateKeyException e) {
-            // Do nothing. Adding like is idempotent
-        }
-
-    }
-
-    @Override
-    public boolean deleteLike(Long filmId, Long userId) {
-
-        String sqlQuery = "DELETE FROM filmorate_like WHERE film_id = ? AND user_id = ?";
-        return jdbcTemplate.update(sqlQuery, filmId, userId) > 0;
-
-    }
-
     @Override
     public List<Film> getMostPopularFilms(Integer count) {
 
@@ -185,106 +156,6 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
-
-    // LIKES - Checking
-    @Override
-    public boolean hasLike(Long filmId, Long userId) {
-
-        String sql = "SELECT count(*) FROM filmorate_like WHERE film_id = ? AND user_id = ?";
-        int count = jdbcTemplate.queryForObject(sql, Integer.class, filmId, userId);
-        return (count > 0);
-
-    }
-
-
-    // GENRES - CRUD
-    @Override
-    public Genre addGenre(Genre genre) {
-
-        Map<String, Object> genreFields = new HashMap<>();
-        genreFields.put("name", genre.getName());
-
-        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
-                .withTableName("GENRE")
-                .usingGeneratedKeyColumns("id");
-
-        Long genreId =  simpleJdbcInsert.executeAndReturnKey(genreFields).longValue();
-        genre.setId(genreId);
-
-        return genre;
-
-    }
-
-    @Override
-    public Genre updateGenre(Genre genre) {
-
-        // genre
-        String sqlQuery = "UPDATE genre SET name = ? WHERE id = ?";
-
-        jdbcTemplate.update(sqlQuery,
-                genre.getName(),
-                genre.getId());
-
-        return genre;
-
-    }
-
-    @Override
-    public Genre getGenre(Long id) {
-
-        String sqlQuery = "SELECT id, name FROM genre WHERE id = ?";
-
-        try {
-            return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
-        } catch (IncorrectResultSizeDataAccessException e) {
-            return null;
-        }
-
-    }
-
-    @Override
-    public Set<Genre> getGenres() {
-
-        String sqlQuery = "SELECT id, name FROM genre";
-        List<Genre> genreList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs));
-        return new TreeSet<>(genreList);
-
-    }
-
-
-    // GENRES - Checking
-    @Override
-    public boolean hasGenre(Genre genre) {
-
-        boolean newGenre = (genre.getId() == null);
-
-        String sql;
-        Object[] params;
-
-        if (newGenre) {
-            sql = "SELECT count(*) FROM genre WHERE name = ?";
-            params = new Object[]{genre.getName()};
-        } else {
-            sql = "SELECT count(*) FROM film WHERE name = ? AND id <> ?";
-            params = new Object[]{genre.getName(), genre.getId()};
-        }
-        int count = jdbcTemplate.queryForObject(sql, Integer.class, params);
-
-        return (count > 0);
-
-    }
-
-    @Override
-    public Set<Long> getUnknownGenreIds(Set<Long> genreIds) {
-
-        String sqlQuery = "SELECT id FROM genre";
-        List<Long> genreFoundIds = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenreId(rs));
-
-        genreIds.removeAll(genreFoundIds);
-
-        return genreIds;
-
-    }
 
     // RESET STORAGE
     @Override
@@ -322,21 +193,38 @@ public class FilmDbStorage implements FilmStorage {
                 .build();
     }
 
-    private Long makeGenreId(ResultSet resultSet) throws SQLException {
-        return resultSet.getLong("id");
-    }
-
-    private Genre makeGenre(ResultSet resultSet) throws SQLException {
-
-        return Genre.builder()
-                .id(resultSet.getLong("id"))
-                .name(resultSet.getString("name"))
-                .build();
-
-    }
-
 
     // genres
+    private void updateGenres(Film film) {
+
+        // delete
+        String sqlQueryDelete = "DELETE FROM film_genre WHERE film_id = ?";
+        jdbcTemplate.update(sqlQueryDelete, film.getId());
+
+        // insert
+        if (film.getGenres() == null || film.getGenres().size() == 0) {
+            return;
+        }
+        List<Genre> genres = new ArrayList<>(film.getGenres());
+        String sqlQueryInsert = "INSERT INTO film_genre(film_id, genre_id) VALUES (?, ?)";
+
+        jdbcTemplate.batchUpdate(sqlQueryInsert, new BatchPreparedStatementSetter() {
+
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, film.getId());
+                ps.setLong(2, genres.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return genres.size();
+            }
+
+        });
+
+    }
+
     private void linkGenresToFilms(List<Film> filmList) {
 
         linkGenresToFilms(filmList, true);
@@ -371,48 +259,27 @@ public class FilmDbStorage implements FilmStorage {
             sqlRowSet = jdbcTemplate.queryForRowSet(sqlFilmsGenres);
         }
 
-        Map<Long, TreeSet<Genre>> filmsGenres = new HashMap<>();
+        Map<Long, List<Genre>> filmsGenres = new HashMap<>();
         while (sqlRowSet.next()) {
             Long filmId = sqlRowSet.getLong("film_id");
             Long genreId = sqlRowSet.getLong("genre_id");
-            filmsGenres.computeIfAbsent(filmId, v -> new TreeSet<>()).add(allGenresListMap.get(genreId));
+            filmsGenres.computeIfAbsent(filmId, v -> new ArrayList<>()).add(allGenresListMap.get(genreId));
         }
 
         // set genres to film
         filmList.forEach(film -> {
-            TreeSet<Genre> genres = filmsGenres.get(film.getId());
-            film.setGenres((genres != null ? genres : new TreeSet<>()));
+            List<Genre> genres = filmsGenres.get(film.getId());
+            film.setGenres((genres != null ? genres : new ArrayList<>()));
         });
 
     }
 
-    private void updateGenres(Film film) {
+    private Genre makeGenre(ResultSet resultSet) throws SQLException {
 
-        // delete
-        String sqlQueryDelete = "DELETE FROM film_genre WHERE film_id = ?";
-        jdbcTemplate.update(sqlQueryDelete, film.getId());
-
-        // insert
-        if (film.getGenres() == null || film.getGenres().size() == 0) {
-            return;
-        }
-        List<Genre> genres = new ArrayList<>(film.getGenres());
-        String sqlQueryInsert = "INSERT INTO film_genre(film_id, genre_id) VALUES (?, ?)";
-
-        jdbcTemplate.batchUpdate(sqlQueryInsert, new BatchPreparedStatementSetter() {
-
-            @Override
-            public void setValues(PreparedStatement ps, int i) throws SQLException {
-                ps.setLong(1, film.getId());
-                ps.setLong(2, genres.get(i).getId());
-            }
-
-            @Override
-            public int getBatchSize() {
-                return genres.size();
-            }
-
-        });
+        return Genre.builder()
+                .id(resultSet.getLong("id"))
+                .name(resultSet.getString("name"))
+                .build();
 
     }
 

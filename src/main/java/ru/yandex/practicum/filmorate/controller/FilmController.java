@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -12,21 +12,17 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/films")
 @Validated
+@RequiredArgsConstructor
 @SuppressWarnings("unused")
 public class FilmController {
 
     private final FilmService filmService;
     private final String topFilmsSize = "10";
 
-    @Autowired
-    public FilmController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     // FILMS
     @PostMapping
@@ -46,7 +42,7 @@ public class FilmController {
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
-    public Film putFilm(@RequestBody Film film) {
+    public Film putFilm(@Valid @RequestBody Film film) {
 
         // validation
         boolean filmIdEmpty = (film.getId() == null);
@@ -67,7 +63,7 @@ public class FilmController {
     }
 
     @GetMapping
-    public Set<Film> getFilms() {
+    public List<Film> getFilms() {
 
         return filmService.getFilms();
 

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.database;
+package ru.yandex.practicum.filmorate;
 
 
 import lombok.RequiredArgsConstructor;
@@ -9,12 +9,15 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
-import java.util.Set;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,9 +28,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FilmDatabaseTests {
 
     @Autowired
-    private FilmDbStorage filmStorage;
+    private FilmStorage filmStorage;
     @Autowired
-    private UserDbStorage userStorage;
+    private UserStorage userStorage;
+    @Autowired
+    private GenreStorage genreStorage;
+    @Autowired
+    private LikeStorage likeStorage;
 
     @BeforeEach
     public void setUp() {
@@ -41,7 +48,7 @@ public class FilmDatabaseTests {
         assertThat(film)
                 .isNull();
 
-        Set<Film> films = filmStorage.getFilms();
+        List<Film> films = filmStorage.getFilms();
         assertThat(films)
                 .size().isZero();
 
@@ -50,6 +57,7 @@ public class FilmDatabaseTests {
                 .description("Nominated for 7 Oscars")
                 .releaseDate(LocalDate.of(1994, 9, 22))
                 .duration(144)
+                .mpa(Mpa.G)
                 .build());
 
         Film film1 = filmStorage.getFilm(1L);
@@ -65,7 +73,7 @@ public class FilmDatabaseTests {
         assertThat(film1)
                 .hasFieldOrPropertyWithValue("rate", (byte)5);
 
-        Set<Film> allFilms = filmStorage.getFilms();
+        List<Film> allFilms = filmStorage.getFilms();
         assertThat(allFilms)
                 .size().isEqualTo(1);
 
@@ -79,6 +87,7 @@ public class FilmDatabaseTests {
                 .description("Nominated for 7 Oscars")
                 .releaseDate(LocalDate.of(1994, 9, 22))
                 .duration(144)
+                .mpa(Mpa.G)
                 .build();
 
         Film film2 = Film.builder()
@@ -86,6 +95,7 @@ public class FilmDatabaseTests {
                 .description("Nominated for 7 Oscars")
                 .releaseDate(LocalDate.of(1994, 9, 22))
                 .duration(144)
+                .mpa(Mpa.G)
                 .build();
 
         filmStorage.addFilm(film1);
@@ -103,6 +113,7 @@ public class FilmDatabaseTests {
                 .description("Nominated for 7 Oscars")
                 .releaseDate(LocalDate.of(1994, 9, 22))
                 .duration(144)
+                .mpa(Mpa.G)
                 .build();
 
         Film film2 = Film.builder()
@@ -110,15 +121,21 @@ public class FilmDatabaseTests {
                 .description("Won 3 Oscars")
                 .releaseDate(LocalDate.of(1972, 3, 17))
                 .duration(144)
+                .mpa(Mpa.G)
                 .build();
 
-        User user1 = User.builder().name("John").email("john@beatles.uk").login("john").build();
+        User user1 = User.builder()
+                .name("John")
+                .email("john@beatles.uk")
+                .login("john")
+                .birthday(LocalDate.of(1940, 10, 9))
+                .build();
 
         filmStorage.addFilm(film1);
         filmStorage.addFilm(film2);
         userStorage.addUser(user1);
 
-        filmStorage.addLike(2L, 1L);
+        likeStorage.addLike(2L, 1L);
 
         assertThat(filmStorage.getMostPopularFilms(10).get(0))
                 .hasFieldOrPropertyWithValue("name", "The Godfather");
@@ -127,8 +144,8 @@ public class FilmDatabaseTests {
                 .hasFieldOrPropertyWithValue("name", "The Shawshank Redemption");
 
 
-        filmStorage.deleteLike(2L,1L);
-        filmStorage.addLike(1L, 1L);
+        likeStorage.deleteLike(2L,1L);
+        likeStorage.addLike(1L, 1L);
 
         assertThat(filmStorage.getMostPopularFilms(10).get(0))
                 .hasFieldOrPropertyWithValue("name", "The Shawshank Redemption");
@@ -136,10 +153,10 @@ public class FilmDatabaseTests {
         assertThat(filmStorage.getMostPopularFilms(10).get(1))
                 .hasFieldOrPropertyWithValue("name", "The Godfather");
 
-        assertThat(filmStorage.hasLike(1L, 1L))
+        assertThat(likeStorage.hasLike(1L, 1L))
                 .isTrue();
 
-        assertThat(filmStorage.hasLike(2L, 1L))
+        assertThat(likeStorage.hasLike(2L, 1L))
                 .isFalse();
 
 
@@ -148,28 +165,26 @@ public class FilmDatabaseTests {
     @Test
     public void testGenreCrud() {
 
-        Set<Genre> genres = filmStorage.getGenres();
+        List<Genre> genres = genreStorage.getGenres();
         assertThat(genres)
                 .size().isEqualTo(6);
 
-        filmStorage.addGenre(Genre.builder()
+        genreStorage.addGenre(Genre.builder()
                 .name("New genre")
                 .build());
 
-        assertThat(filmStorage.getGenres())
+        assertThat(genreStorage.getGenres())
                 .size().isEqualTo(7);
 
-        assertThat(filmStorage.getGenre(7L))
+        assertThat(genreStorage.getGenre(7L))
                 .hasFieldOrPropertyWithValue("name", "New genre");
 
-        assertThat(filmStorage.hasGenre(Genre.builder().name("New genre").build()))
+        assertThat(genreStorage.hasGenre(Genre.builder().name("New genre").build()))
                 .isTrue();
 
-        assertThat(filmStorage.hasGenre(Genre.builder().name("Some genre").build()))
+        assertThat(genreStorage.hasGenre(Genre.builder().name("Some genre").build()))
                 .isFalse();
 
     }
-
-
 
 }

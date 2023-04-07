@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -10,20 +10,16 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @RequestMapping("/genres")
 @Validated
+@RequiredArgsConstructor
 @SuppressWarnings("unused")
 public class GenreController {
 
     private final FilmService filmService;
-
-    @Autowired
-    public GenreController(FilmService filmService) {
-        this.filmService = filmService;
-    }
 
     @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
@@ -63,7 +59,7 @@ public class GenreController {
     }
 
     @GetMapping
-    public Set<Genre> getGenres() {
+    public List<Genre> getGenres() {
 
         return filmService.getGenres();
 

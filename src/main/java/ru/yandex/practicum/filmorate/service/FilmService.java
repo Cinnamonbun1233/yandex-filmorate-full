@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ResourceHasATwinException;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.annotation.PostConstruct;
@@ -15,16 +16,13 @@ import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-
-    @Autowired
-    public FilmService(FilmStorage filmStorage, @Qualifier("userDbStorage") UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.userStorage = userStorage;
-    }
+    private final GenreStorage genreStorage;
+    private final LikeStorage likeStorage;
 
     // FILMS
     public Film addFilm(Film film) {
@@ -81,7 +79,7 @@ public class FilmService {
 
     }
 
-    public Set<Film> getFilms() {
+    public List<Film> getFilms() {
 
         return filmStorage.getFilms();
 
@@ -107,7 +105,7 @@ public class FilmService {
         }
 
         // add like
-        filmStorage.addLike(filmId, userId);
+        likeStorage.addLike(filmId, userId);
 
     }
 
@@ -128,13 +126,13 @@ public class FilmService {
             throw new ResourceNotFoundException(notFoundResources);
         }
 
-        boolean hasLike = filmStorage.hasLike(filmId, userId);
+        boolean hasLike = likeStorage.hasLike(filmId, userId);
         if (!hasLike) {
             throw new ResourceNotFoundException(String.format("Like of user %d to film %d not found", filmId, userId));
         }
 
         // delete like
-        boolean likeDeleted = filmStorage.deleteLike(filmId, userId);
+        boolean likeDeleted = likeStorage.deleteLike(filmId, userId);
         assert likeDeleted;
 
     }
@@ -150,13 +148,13 @@ public class FilmService {
     public Genre addGenre(Genre genre) {
 
         // checking
-        boolean genreIsTwin = filmStorage.hasGenre(genre);
+        boolean genreIsTwin = genreStorage.hasGenre(genre);
         if (genreIsTwin) {
             throw new ResourceHasATwinException("Genre has a twin");
         }
 
         // add genre
-        Genre result = filmStorage.addGenre(genre);
+        Genre result = genreStorage.addGenre(genre);
         assert result != null;
         return result;
 
@@ -166,18 +164,18 @@ public class FilmService {
 
         // checking
         Long id = genre.getId();
-        boolean genreIdNotFound = (filmStorage.getGenre(id) == null);
+        boolean genreIdNotFound = (genreStorage.getGenre(id) == null);
         if (genreIdNotFound) {
             throw new ResourceNotFoundException("Genre", id);
         }
 
-        boolean genreIsTwin = filmStorage.hasGenre(genre);
+        boolean genreIsTwin = genreStorage.hasGenre(genre);
         if (genreIsTwin) {
             throw new ResourceHasATwinException("Genre has a twin");
         }
 
         // update genre
-        Genre result = filmStorage.updateGenre(genre);
+        Genre result = genreStorage.updateGenre(genre);
         assert result != null;
         return result;
 
@@ -186,7 +184,7 @@ public class FilmService {
     public Genre getGenre(Long id) {
 
         // checking
-        Genre genre = filmStorage.getGenre(id);
+        Genre genre = genreStorage.getGenre(id);
         if (genre == null) {
             throw new ResourceNotFoundException("Genre", id);
         }
@@ -196,9 +194,9 @@ public class FilmService {
 
     }
 
-    public Set<Genre> getGenres() {
+    public List<Genre> getGenres() {
 
-        return filmStorage.getGenres();
+        return genreStorage.getGenres();
 
     }
 
@@ -240,11 +238,11 @@ public class FilmService {
 
     private void filmHasUnknownGenres(Film film) {
 
-        Set<Genre> filmGenres = film.getGenres();
+        List<Genre> filmGenres = film.getGenres();
 
         if (filmGenres != null && filmGenres.size() > 0) {
             Set<Long> genresIds = filmGenres.stream().map(Genre::getId).collect(Collectors.toSet());
-            Set<Long> unknownGenreIds = filmStorage.getUnknownGenreIds(genresIds);
+            Set<Long> unknownGenreIds = genreStorage.getUnknownGenreIds(genresIds);
             if (unknownGenreIds.size() > 0) {
                 String unknownGenres = unknownGenreIds.stream().map(String::valueOf).collect(Collectors.joining(" ,"));
                 throw new ResourceNotFoundException("Genre with id " + unknownGenres + " not found");
@@ -256,9 +254,7 @@ public class FilmService {
     private void filmHasUnknownMpa(Film film) {
 
         Mpa mpa = film.getMpa();
-        if (mpa == null) {
-            return;
-        }
+
         Long mpaId = mpa.getId();
         if (Mpa.getMpa(mpaId) == null) {
             throw new ResourceNotFoundException("MPA with id " + mpaId + " not found");
@@ -273,8 +269,14 @@ public class FilmService {
     private void fixGenres(Film film) {
 
         if (film.getGenres() == null) {
-            film.setGenres(new TreeSet<>());
+            film.setGenres(Collections.EMPTY_LIST);
         }
+
+        List<Genre> geresWithoutDuplicates = film.getGenres()
+                .stream()
+                .distinct()
+                .collect(Collectors.toList());
+        film.setGenres(geresWithoutDuplicates);
 
     }
 
@@ -282,7 +284,7 @@ public class FilmService {
     @SuppressWarnings("unused")
     private void setUpGenres() {
 
-        if (filmStorage.getGenre(1L) == null) {
+        if (genreStorage.getGenre(1L) == null) {
             addGenre(Genre.builder().name("Комедия").build());
             addGenre(Genre.builder().name("Драма").build());
             addGenre(Genre.builder().name("Мультфильм").build());

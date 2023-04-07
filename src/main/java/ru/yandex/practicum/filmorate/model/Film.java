@@ -10,12 +10,11 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.List;
 
 @Data
 @Builder
-public class Film implements Comparable<Film> {
+public class Film {
 
     @Positive
     @EqualsAndHashCode.Exclude
@@ -27,26 +26,23 @@ public class Film implements Comparable<Film> {
     @IsAfterCinemaBirthday
     private LocalDate releaseDate;
     @Positive
+    @NotNull
     @EqualsAndHashCode.Exclude
     private Integer duration;
     @Positive
     @EqualsAndHashCode.Exclude
     private Byte rate;
     @EqualsAndHashCode.Exclude
-    private TreeSet<Genre> genres;
+    private List<Genre> genres;
+    @NotNull
     @EqualsAndHashCode.Exclude
     private Mpa mpa;
 
-    public void setUpGenres(Set<Genre> genresToSetUp) {
+    public void setUpGenres(List<Genre> genresToSetUp) {
 
         genres.clear();
         genres.addAll(genresToSetUp);
 
-    }
-
-    @Override
-    public int compareTo(@NotNull Film other) {
-        return Long.compare(this.getId(), other.getId());
     }
 
 }

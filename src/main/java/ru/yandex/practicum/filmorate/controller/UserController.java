@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -13,20 +13,16 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
-import java.util.TreeSet;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 @Validated
+@RequiredArgsConstructor
 @SuppressWarnings("unused")
 public class UserController {
 
     private final UserService userService;
-
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     // USERS
     @PostMapping
@@ -44,7 +40,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User putUser(@RequestBody User user) {
+    public User putUser(@Valid @RequestBody User user) {
 
         // validation
         if (user.getId() == null) {
@@ -64,7 +60,7 @@ public class UserController {
     }
 
     @GetMapping
-    public TreeSet<User> getUsers() {
+    public List<User> getUsers() {
 
         return userService.getUsers();
 
@@ -90,14 +86,14 @@ public class UserController {
     }
 
     @GetMapping("{id}/friends")
-    public TreeSet<User> getUsersFriends(@PathVariable @Positive Long id) {
+    public List<User> getUsersFriends(@PathVariable @Positive Long id) {
 
         return userService.getUsersFriends(id);
 
     }
 
     @GetMapping("{id}/friends/common/{otherId}")
-    public TreeSet<User> getCommonFriends(@PathVariable @Positive Long id, @PathVariable @Positive Long otherId) {
+    public List<User> getCommonFriends(@PathVariable @Positive Long id, @PathVariable @Positive Long otherId) {
 
         if (id.equals(otherId)) {
             throw new FriendToYourselfException("First user id equals second user id");

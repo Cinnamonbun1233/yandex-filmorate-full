@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.TreeSet;
+import java.util.List;
 
 public interface UserStorage {
 
@@ -13,7 +13,7 @@ public interface UserStorage {
 
     User getUser(Long id);
 
-    TreeSet<User> getUsers();
+    List<User> getUsers();
 
     // USERS - Checking
     boolean emailAlreadyUsed(String email);
@@ -23,16 +23,6 @@ public interface UserStorage {
     boolean loginAlreadyUsed(String login);
 
     boolean loginAlreadyUsed(String login, Long excludedUserId);
-
-    // FRIENDS - CRUD
-    void addFriend(Long userId, Long friendId);
-
-    TreeSet<User> getFriends(Long id);
-
-    boolean deleteFriend(Long userId, Long friendId);
-
-    // FRIENDS - Checking
-    boolean hasConnection(Long userId, Long friendId);
 
     // RESET STORAGE
     void deleteAllData();

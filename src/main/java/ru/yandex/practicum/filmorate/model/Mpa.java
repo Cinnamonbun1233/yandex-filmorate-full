@@ -61,8 +61,6 @@ public class Mpa implements Comparable<Mpa> {
 
     }
 
-
-
     public static Set<Mpa> getMpas() {
 
         Set<Mpa> res = new TreeSet<>();
