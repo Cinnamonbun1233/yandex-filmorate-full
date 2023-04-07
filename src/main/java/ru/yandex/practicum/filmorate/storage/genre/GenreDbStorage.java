@@ -14,7 +14,7 @@ import java.util.*;
 @Repository
 @RequiredArgsConstructor
 @SuppressWarnings("unused")
-public class GenreDbStorage implements GenreStorage{
+public class GenreDbStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
