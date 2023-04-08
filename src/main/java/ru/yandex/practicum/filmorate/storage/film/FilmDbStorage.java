@@ -12,8 +12,6 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.*;
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -139,15 +137,14 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getMostPopularFilms(Integer count) {
 
         // films
-        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa, idAndLikes.Likes " +
-                "FROM film f JOIN " +
-                "(SELECT f.id AS film_id, IFNULL(l.sum,0) AS likes " +
-                "FROM film AS f LEFT JOIN " +
-                "(SELECT film_id, count(*) AS sum " +
-                "FROM FILMORATE_LIKE GROUP BY film_id ORDER BY sum DESC LIMIT (?)) " +
-                "AS l ON f.id = l.film_id ORDER BY likes DESC LIMIT (?)) AS idAndLikes ON f.ID = idAndLikes.film_id";
+        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa " +
+                "FROM film f " +
+                "LEFT JOIN FILMORATE_LIKE ON f.id = FILMORATE_LIKE.film_id " +
+                "GROUP BY f.id " +
+                "ORDER BY COUNT(FILMORATE_LIKE.film_id) DESC " +
+                "LIMIT ?";
 
-        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count, count);
+        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
 
         // genres
         linkGenresToFilms(filmList);
@@ -178,19 +175,16 @@ public class FilmDbStorage implements FilmStorage {
     // RowMappers
     private Film makeFilm(ResultSet resultSet) throws SQLException {
 
-        // i don't like this code but dunno how to do it better
-        Date releaseDateAsDate = resultSet.getDate("release_date");
-        LocalDate releaseDateAsLocalDate = (releaseDateAsDate == null ? null : releaseDateAsDate.toLocalDate());
-
         return Film.builder()
                 .id(resultSet.getLong("id"))
                 .name(resultSet.getString("name"))
                 .description(resultSet.getString("description"))
-                .releaseDate(releaseDateAsLocalDate)
+                .releaseDate(resultSet.getDate("release_date").toLocalDate())
                 .duration(resultSet.getInt("duration"))
                 .rate(resultSet.getByte("rate"))
                 .mpa(Mpa.getMpa(resultSet.getLong("mpa")))
                 .build();
+
     }
 
 

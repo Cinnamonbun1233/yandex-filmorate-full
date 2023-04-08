@@ -155,11 +155,7 @@ public class UserService {
             throw new ResourceNotFoundException(notFoundResources);
         }
 
-        // return common friends
-        List<User> firstUsersFriends = getUsersFriends(userId);
-        List<User> secondUsersFriends = getUsersFriends(otherUserId);
-        firstUsersFriends.retainAll(secondUsersFriends);
-        return firstUsersFriends;
+        return friendStorage.getCommonFriends(userId, otherUserId);
 
     }
 

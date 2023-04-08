@@ -5,10 +5,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -43,6 +41,17 @@ public class FriendDbStorage implements FriendStorage {
 
     }
 
+    @Override
+    public List<User> getCommonFriends(Long userId, Long otherUserId) {
+
+        String sqlQuery = "SELECT id, email, login, name, birthday FROM filmorate_user WHERE id IN" +
+                "(SELECT user_to FROM friends WHERE user_from = ? AND user_to IN " +
+                "(SELECT user_to FROM friends WHERE user_from = ?))";
+
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeUser(rs), otherUserId, userId);
+
+    }
+
 
     // Checking
     @Override
@@ -58,16 +67,12 @@ public class FriendDbStorage implements FriendStorage {
     // PRIVATE
     private User makeUser(ResultSet resultSet) throws SQLException {
 
-        // i don't like this code but dunno how to do it better
-        Date birthdayAsDate = resultSet.getDate("birthday");
-        LocalDate birthdayAsLocalDate = (birthdayAsDate == null ? null : birthdayAsDate.toLocalDate());
-
         return User.builder()
                 .id(resultSet.getLong("id"))
                 .email(resultSet.getString("email"))
                 .login(resultSet.getString("login"))
                 .name(resultSet.getString("name"))
-                .birthday(birthdayAsLocalDate)
+                .birthday(resultSet.getDate("birthday").toLocalDate())
                 .build();
 
     }

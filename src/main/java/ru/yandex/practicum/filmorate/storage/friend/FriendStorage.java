@@ -13,6 +13,8 @@ public interface FriendStorage {
 
     boolean deleteFriend(Long userId, Long friendId);
 
+    List<User> getCommonFriends(Long userId, Long otherUserId);
+
     // Checking
     boolean hasConnection(Long userId, Long friendId);
 

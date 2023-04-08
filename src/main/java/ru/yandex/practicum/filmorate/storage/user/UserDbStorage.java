@@ -7,10 +7,8 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,16 +133,12 @@ public class UserDbStorage implements UserStorage {
     // PRIVATE
     private User makeUser(ResultSet resultSet) throws SQLException {
 
-        // i don't like this code but dunno how to do it better
-        Date birthdayAsDate = resultSet.getDate("birthday");
-        LocalDate birthdayAsLocalDate = (birthdayAsDate == null ? null : birthdayAsDate.toLocalDate());
-
         return User.builder()
                 .id(resultSet.getLong("id"))
                 .email(resultSet.getString("email"))
                 .login(resultSet.getString("login"))
                 .name(resultSet.getString("name"))
-                .birthday(birthdayAsLocalDate)
+                .birthday(resultSet.getDate("birthday").toLocalDate())
                 .build();
 
     }
