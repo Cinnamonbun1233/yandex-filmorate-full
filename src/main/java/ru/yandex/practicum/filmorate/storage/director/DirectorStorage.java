@@ -11,9 +11,9 @@ public interface DirectorStorage {
 
     boolean hasTwin(Director director);
 
-    Director getDirector(Long id);
-    
     Director updateDirector(Director director);
+
+    Director getDirector(Long id);
 
     List<Director> getDirectors();
 
