@@ -2,10 +2,8 @@ package ru.yandex.practicum.filmorate.storage.review;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLike;
 
 import java.sql.ResultSet;
@@ -13,7 +11,7 @@ import java.sql.SQLException;
 
 @Component
 @RequiredArgsConstructor
-public class ReviewLikeDaoImpl {
+public class ReviewLikeDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public void addLike(long reviewId, long userId) {
