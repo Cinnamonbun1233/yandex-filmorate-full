@@ -8,9 +8,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.AlreadyLikedException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.ReviewLike;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -26,17 +24,17 @@ public class ReviewDbStorage {
 
 
     public void changeUseful(long reviewId, long userId, int operation) {
-        String sql = "UPDATE reviews SET rating = rating + ? WHERE id = ?";
+        String sql = "UPDATE REVIEWS SET rating = rating + ? WHERE id = ?";
         jdbcTemplate.update(sql, operation, reviewId);
     }
 
-    public List<Review> getReviews(long filmId, int count) {
+    public List<Review> getReviews(Long filmId, int count) {
         String sql;
-        if (filmId == 0) {
-            sql = "SELECT * FROM reviews ORDER BY rating LIMIT ?";
+        if (filmId == null) {
+            sql = "SELECT * FROM REVIEWS ORDER BY rating DESC LIMIT ?";
             return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), count);
         } else {
-            sql = "SELECT * FROM reviews WHERE film_id=? ORDER BY rating LIMIT ?";
+            sql = "SELECT * FROM REVIEWS WHERE film_id=? ORDER BY rating DESC LIMIT ?";
             return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), filmId, count);
         }
     }
@@ -47,8 +45,8 @@ public class ReviewDbStorage {
                 .reviewId(id)
                 .content(rs.getString("content"))
                 .isPositive(rs.getBoolean("type"))
-                .userId(rs.getInt("user_id"))
-                .filmId(rs.getInt("film_id"))
+                .userId(rs.getLong("user_id"))
+                .filmId(rs.getLong("film_id"))
                 .useful(rs.getInt("rating"))
                 .build();
     }
@@ -69,14 +67,17 @@ public class ReviewDbStorage {
 
     @SneakyThrows
     public Review update(Review review) {
-        String sql = "UPDATE reviews SET content=?,type=?,film_id=? WHERE id=?";
-        jdbcTemplate.update(sql, review.getContent(), review.getIsPositive(), review.getFilmId(), review.getReviewId());
+        String sql = "UPDATE REVIEWS SET content=?,type=? WHERE id=?";
+        jdbcTemplate.update(sql,
+                review.getContent(),
+                review.getIsPositive(),
+                review.getReviewId());
         log.info("Обновлен отзыв : {}", mapper.writeValueAsString(review));
-        return review;
+        return getReviewById(review.getReviewId());
     }
 
     public void delete(long id) {
-        String sql = "DELETE FROM reviews WHERE id = ?";
+        String sql = "DELETE FROM REVIEWS WHERE id = ?";
         jdbcTemplate.update(sql, id);
     }
 
