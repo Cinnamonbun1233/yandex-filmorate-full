@@ -16,7 +16,7 @@ import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
-public class DirectorDbStorage implements DirectorStorage{
+public class DirectorDbStorage implements DirectorStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
