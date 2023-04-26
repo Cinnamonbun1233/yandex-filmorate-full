@@ -290,10 +290,8 @@ public class FilmService {
 
     }
 
-    public Director deleteDirector(Long id) {
-
-        // TO DO
-        return null;
+    public void deleteDirector(Long id) {
+        directorStorage.deleteDirector(id);
 
     }
 
@@ -341,7 +339,7 @@ public class FilmService {
 
         if (filmDirectors != null && filmDirectors.size() > 0) {
             Set<Long> directorIds = filmDirectors.stream().map(Director::getId).collect(Collectors.toSet());
-                Set<Long> unknownDirectorsIds = directorStorage.getUnknownDirectorIds(directorIds);
+            Set<Long> unknownDirectorsIds = directorStorage.getUnknownDirectorIds(directorIds);
             if (unknownDirectorsIds.size() > 0) {
                 String unknownGenres = unknownDirectorsIds.stream().map(String::valueOf).collect(Collectors.joining(" ,"));
                 throw new ResourceNotFoundException("Director with id " + unknownGenres + " not found");

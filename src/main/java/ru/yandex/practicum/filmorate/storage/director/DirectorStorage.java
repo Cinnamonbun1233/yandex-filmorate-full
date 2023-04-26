@@ -19,4 +19,5 @@ public interface DirectorStorage {
 
     Set<Long> getUnknownDirectorIds(Set<Long> directorsId);
 
+    void deleteDirector(Long id);
 }

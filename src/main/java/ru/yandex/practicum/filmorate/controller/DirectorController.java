@@ -64,10 +64,7 @@ public class DirectorController {
     }
 
     @DeleteMapping("/{id}")
-    public Director deleteDirector(@PathVariable @Positive Long id) {
-
-        return filmService.deleteDirector(id);
-
+    public void deleteDirector(@PathVariable @Positive Long id) {
+        filmService.deleteDirector(id);
     }
-
 }
