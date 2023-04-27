@@ -57,7 +57,7 @@ public class DirectorController {
     }
 
     @GetMapping
-    public List<Director> getDirector() {
+    public List<Director> getDirectors() {
 
         return filmService.getDirectors();
 
