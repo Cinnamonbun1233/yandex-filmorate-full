@@ -18,7 +18,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Component
 @Slf4j
-public class ReviewDbStorage {
+public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
 
@@ -82,7 +82,7 @@ public class ReviewDbStorage {
     }
 
     public Review getReviewById(long id) {
-        String sql = "SELECT * FROM Reviews WHERE id=?";
+        String sql = "SELECT * FROM REVIEWS WHERE id=?";
         try {
             return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeReview(rs), id);
         } catch (EmptyResultDataAccessException ex) {

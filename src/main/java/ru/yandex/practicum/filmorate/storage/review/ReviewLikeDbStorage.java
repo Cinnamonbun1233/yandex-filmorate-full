@@ -11,7 +11,7 @@ import java.sql.SQLException;
 
 @Component
 @RequiredArgsConstructor
-public class ReviewLikeDbStorage {
+public class ReviewLikeDbStorage implements ReviewLikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public void addLike(long reviewId, long userId) {

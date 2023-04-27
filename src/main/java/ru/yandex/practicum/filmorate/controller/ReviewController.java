@@ -19,6 +19,7 @@ public class ReviewController {
     public Review createReview(@Valid @RequestBody Review review) {
         return reviewService.create(review);
     }
+
     @GetMapping
     public List<Review> getReviews(@RequestParam(required = false) Long filmId, @RequestParam(defaultValue = "10") @PositiveOrZero int count) {
         return reviewService.getReviews(filmId, count);
@@ -38,6 +39,7 @@ public class ReviewController {
     public void deleteLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
         reviewService.deleteLike(reviewId,userId);
     }
+
     @DeleteMapping("/{id}/dislike/{userId}")
     public void deleteDisLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
         reviewService.deleteDisLike(reviewId,userId);
