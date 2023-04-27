@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -94,6 +95,15 @@ public class FilmController {
     public List<Film> getMostPopularFilms(@RequestParam(defaultValue = topFilmsSize) @Positive Integer count) {
 
         return filmService.getMostPopularFilms(count);
+
+    }
+
+    // DIRECTOR
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable @Positive Long directorId,
+                                         @RequestParam @Pattern(regexp = "year|likes") String sortBy) {
+
+        return filmService.getFilmsByDirector(directorId, sortBy);
 
     }
 

@@ -20,6 +20,8 @@ public interface FilmStorage {
 
     List<Film> getMostPopularFilms(Integer count);
 
+    List<Film> getFilmsByDirector(Long directorId, String sortBy);
+
     // RESET STORAGE
     void deleteAllData();
 

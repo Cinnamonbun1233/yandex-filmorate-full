@@ -37,6 +37,7 @@ public class Film {
     @NotNull
     @EqualsAndHashCode.Exclude
     private Mpa mpa;
+    private List<Director> directors;
 
     public void setUpGenres(List<Genre> genresToSetUp) {
 
