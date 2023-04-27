@@ -403,4 +403,52 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    // SEARCH
+    @Override
+    public List<Film> searchInFilms(String query) {
+        List<Film> result = new ArrayList<>();
+
+        List<Film> filmList = searchPopularFilms();
+
+        for (Film film : filmList) {
+            if (film.getName().toLowerCase().contains(query.toLowerCase())) {
+                result.add(film);
+            }
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Film> searchInDirectors(String query) {
+        List<Film> result = new ArrayList<>();
+
+        List<Film> filmList = searchPopularFilms();
+
+        for (Film film : filmList) {
+            for (Director director : film.getDirectors()) {
+                if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                    result.add(film);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private List<Film> searchPopularFilms() {
+        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa " +
+                "FROM film f " +
+                "LEFT JOIN FILMORATE_LIKE fl ON f.id = fl.film_id " +
+                "GROUP BY f.id " +
+                "ORDER BY COUNT(fl.film_id) DESC";
+
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
+
+        linkGenresToFilms(filmList);
+        linkDirectorsToFilms(filmList);
+
+        return filmList;
+    }
+
 }

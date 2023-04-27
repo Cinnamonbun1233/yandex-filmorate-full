@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.like;
 
+import ru.yandex.practicum.filmorate.model.Film;
+
+import java.util.List;
+
 public interface LikeStorage {
 
     // CRUD
@@ -10,5 +14,7 @@ public interface LikeStorage {
 
     // Checking
     boolean hasLike(Long filmId, Long userId);
+
+    List<Film> sortFilmsByLikes(List<Film> filmList);
 
 }

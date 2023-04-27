@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.yandex.practicum.filmorate.exception.ResourceHasATwinException;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
@@ -402,6 +403,28 @@ public class FilmService {
             addGenre(Genre.builder().name("Боевик").build());
         }
 
+    }
+
+    // SEARCH
+    public List<Film> searchInFilmsAndDirectors(String query, String[] by) {
+        List<Film> result = new ArrayList<>();
+
+        if (by.length == 1) {
+            if (by[0].equals("title")) {
+                return filmStorage.searchInFilms(query);
+            }
+            if (by[0].equals("director")) {
+                return filmStorage.searchInDirectors(query);
+            }
+        }
+
+        if (by.length == 2) {
+            result.addAll(filmStorage.searchInFilms(query));
+            result.addAll(filmStorage.searchInDirectors(query));
+            return likeStorage.sortFilmsByLikes(result);
+        }
+
+        return new ArrayList<>();
     }
 
 }
