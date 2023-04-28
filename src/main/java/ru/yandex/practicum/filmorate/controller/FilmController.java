@@ -70,11 +70,10 @@ public class FilmController {
 
     }
 
-    @DeleteMapping("/{id}")
-    public Film deleteFilm() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    @DeleteMapping("/{filmId}")
+    public void deleteFilmById(@PathVariable Long filmId) {
+        filmService.deleteFilmById(filmId);
     }
-
 
     // LIKES
     @PutMapping("{id}/like/{userId}") // idempotent

@@ -187,4 +187,17 @@ public class FilmDatabaseTests {
 
     }
 
+    @Test
+    public void deleteFilmTest() {
+        Film film = Film.builder()
+                .name("The Shawshank Redemption")
+                .description("Nominated for 7 Oscars")
+                .releaseDate(LocalDate.of(1994, 9, 22))
+                .duration(144)
+                .mpa(Mpa.G)
+                .build();
+        filmStorage.addFilm(film);
+        filmStorage.deleteFilmById(film.getId());
+        assertThat(film).hasFieldOrPropertyWithValue("id", film.getId());
+    }
 }
