@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.model.LikeType;
 import ru.yandex.practicum.filmorate.model.ReviewLike;
 
 import java.sql.ResultSet;
@@ -14,7 +15,7 @@ import java.sql.SQLException;
 public class ReviewLikeDbStorage implements ReviewLikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public void addLike(long reviewId, long userId, String type) {
+    public void addLike(long reviewId, long userId, LikeType type) {
         String sql = String.format("INSERT INTO review_like VALUES(?,?,'%s')", type);
         jdbcTemplate.update(sql, reviewId, userId);
     }
@@ -28,13 +29,13 @@ public class ReviewLikeDbStorage implements ReviewLikeStorage {
         }
     }
 
-    public void deleteLike(long reviewId, long userId, String type) {
+    public void deleteLike(long reviewId, long userId, LikeType type) {
         String sql = String.format("DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND type = '%s'", type);
         jdbcTemplate.update(sql, reviewId, userId);
     }
 
     private ReviewLike makeReviewLike(ResultSet rs) throws SQLException {
         return new ReviewLike(rs.getInt("review_id"),
-                rs.getInt("user_id"), rs.getString("type"));
+                rs.getInt("user_id"), LikeType.valueOf(rs.getString("type")));
     }
 }

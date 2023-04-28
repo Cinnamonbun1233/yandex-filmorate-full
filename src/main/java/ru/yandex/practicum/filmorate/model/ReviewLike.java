@@ -14,5 +14,5 @@ public class ReviewLike {
     @Positive
     private long userId;
     @NotNull
-    private String type;
+    private LikeType type;
 }

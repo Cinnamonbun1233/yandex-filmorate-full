@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.LikeType;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
@@ -46,21 +47,21 @@ public class ReviewController {
     // LIKES
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
-        reviewService.addLike(reviewId, userId, "LIKE");
+        reviewService.addLike(reviewId, userId, LikeType.LIKE);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
     public void addDislike(@PathVariable("id") long reviewId, @PathVariable long userId) {
-        reviewService.addLike(reviewId, userId, "DISLIKE");
+        reviewService.addLike(reviewId, userId, LikeType.DISLIKE);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
-        reviewService.deleteLike(reviewId, userId, "LIKE");
+        reviewService.deleteLike(reviewId, userId, LikeType.LIKE);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
     public void deleteDisLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
-        reviewService.deleteLike(reviewId, userId, "DISLIKE");
+        reviewService.deleteLike(reviewId, userId, LikeType.DISLIKE);
     }
 }

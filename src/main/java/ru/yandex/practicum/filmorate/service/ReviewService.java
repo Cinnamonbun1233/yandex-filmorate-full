@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ResourceHasATwinException;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
+import ru.yandex.practicum.filmorate.model.LikeType;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLike;
 import ru.yandex.practicum.filmorate.model.User;
@@ -22,20 +23,20 @@ public class ReviewService {
     private final FilmService filmService;
     private final ReviewLikeStorage reviewLikeDbStorage;
 
-    public void addLike(long reviewId, long userId, String type) {
+    public void addLike(long reviewId, long userId, LikeType type) {
         User user = userService.getUser(userId);
         Review review = getReviewById(reviewId);
         ReviewLike like = reviewLikeDbStorage.getLike(review.getReviewId(), user.getId());
-        if (like != null && type.equalsIgnoreCase(like.getType())) {
+        if (like != null && type.equals(like.getType())) {
             throw new ResourceHasATwinException(String.format("Пользователь с id - %s уже ставил %s отзыву с id - %s",
-                    userId, type, reviewId));
-        } else if (like != null && !type.equalsIgnoreCase(like.getType())) {
+                    userId, type.name(), reviewId));
+        } else if (like != null && !type.equals(like.getType())) {
             reviewLikeDbStorage.deleteLike(reviewId, userId, like.getType());
         }
         reviewLikeDbStorage.addLike(reviewId, userId, type);
 
         int operation;
-        if (type.equalsIgnoreCase("LIKE")) {
+        if (type.equals(LikeType.LIKE)) {
             operation = 1;
         } else {
             operation = -1;
@@ -43,24 +44,10 @@ public class ReviewService {
         reviewDbStorage.changeUseful(reviewId, userId, operation);
     }
 
-    public void deleteLike(long reviewId, long userId, String type) {
-        User user = userService.getUser(userId);
-        Review review = getReviewById(reviewId);
-        reviewLikeDbStorage.deleteLike(review.getReviewId(), user.getId(), type);
-    }
-
     public Review create(Review review) {
         userService.getUser(review.getUserId());
         filmService.getFilm(review.getFilmId());
         return reviewDbStorage.create(review);
-    }
-
-    public Review update(Review review) {
-        return reviewDbStorage.update(review);
-    }
-
-    public void delete(long id) {
-        reviewDbStorage.delete(id);
     }
 
     public Review getReviewById(long id) {
@@ -74,5 +61,19 @@ public class ReviewService {
 
     public List<Review> getReviews(Long filmId, int count) {
         return reviewDbStorage.getReviews(filmId, count);
+    }
+
+    public void deleteLike(long reviewId, long userId, LikeType type) {
+        User user = userService.getUser(userId);
+        Review review = getReviewById(reviewId);
+        reviewLikeDbStorage.deleteLike(review.getReviewId(), user.getId(), type);
+    }
+
+    public Review update(Review review) {
+        return reviewDbStorage.update(review);
+    }
+
+    public void delete(long id) {
+        reviewDbStorage.delete(id);
     }
 }

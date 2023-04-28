@@ -25,17 +25,6 @@ public class ReviewDbStorage implements ReviewStorage {
         jdbcTemplate.update(sql, operation, reviewId);
     }
 
-    public List<Review> getReviews(Long filmId, int count) {
-        String sql;
-        if (filmId == null) {
-            sql = "SELECT * FROM REVIEWS ORDER BY rating DESC LIMIT ?";
-            return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), count);
-        } else {
-            sql = "SELECT * FROM REVIEWS WHERE film_id=? ORDER BY rating DESC LIMIT ?";
-            return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), filmId, count);
-        }
-    }
-
     @SneakyThrows
     public Review create(Review review) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate).withTableName("reviews")
@@ -47,6 +36,26 @@ public class ReviewDbStorage implements ReviewStorage {
                 "rating", review.getUseful())).longValue();
         review.setReviewId(id);
         return review;
+    }
+
+    public List<Review> getReviews(Long filmId, int count) {
+        String sql;
+        if (filmId == null) {
+            sql = "SELECT * FROM REVIEWS ORDER BY rating DESC LIMIT ?";
+            return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), count);
+        } else {
+            sql = "SELECT * FROM REVIEWS WHERE film_id=? ORDER BY rating DESC LIMIT ?";
+            return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), filmId, count);
+        }
+    }
+
+    public Review getReviewById(long id) {
+        String sql = "SELECT * FROM REVIEWS WHERE id=?";
+        try {
+            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeReview(rs), id);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
     }
 
     @SneakyThrows
@@ -62,15 +71,6 @@ public class ReviewDbStorage implements ReviewStorage {
     public void delete(long id) {
         String sql = "DELETE FROM REVIEWS WHERE id = ?";
         jdbcTemplate.update(sql, id);
-    }
-
-    public Review getReviewById(long id) {
-        String sql = "SELECT * FROM REVIEWS WHERE id=?";
-        try {
-            return jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeReview(rs), id);
-        } catch (EmptyResultDataAccessException ex) {
-            return null;
-        }
     }
 
     private Review makeReview(ResultSet rs) throws SQLException {
