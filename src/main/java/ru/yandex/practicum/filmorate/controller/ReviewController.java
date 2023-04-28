@@ -15,34 +15,11 @@ import java.util.List;
 public class ReviewController {
     private final ReviewService reviewService;
 
+
+    // REVIEWS
     @PostMapping
     public Review createReview(@Valid @RequestBody Review review) {
         return reviewService.create(review);
-    }
-
-    @GetMapping
-    public List<Review> getReviews(@RequestParam(required = false) Long filmId, @RequestParam(defaultValue = "10") @PositiveOrZero int count) {
-        return reviewService.getReviews(filmId, count);
-    }
-
-    @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
-        reviewService.addLike(reviewId, userId);
-    }
-
-    @PutMapping("/{id}/dislike/{userId}")
-    public void addDislike(@PathVariable("id") long reviewId, @PathVariable long userId) {
-        reviewService.addDisLike(reviewId, userId);
-    }
-
-    @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
-        reviewService.deleteLike(reviewId,userId);
-    }
-
-    @DeleteMapping("/{id}/dislike/{userId}")
-    public void deleteDisLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
-        reviewService.deleteDisLike(reviewId,userId);
     }
 
     @PutMapping
@@ -58,5 +35,32 @@ public class ReviewController {
     @GetMapping("/{id}")
     public Review getReviewById(@PathVariable long id) {
         return reviewService.getReviewById(id);
+    }
+
+    @GetMapping
+    public List<Review> getReviews(@RequestParam(required = false) Long filmId, @RequestParam(defaultValue = "10") @PositiveOrZero int count) {
+        return reviewService.getReviews(filmId, count);
+    }
+
+
+    // LIKES
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
+        reviewService.addLike(reviewId, userId, "LIKE");
+    }
+
+    @PutMapping("/{id}/dislike/{userId}")
+    public void addDislike(@PathVariable("id") long reviewId, @PathVariable long userId) {
+        reviewService.addLike(reviewId, userId, "DISLIKE");
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void deleteLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
+        reviewService.deleteLike(reviewId, userId, "LIKE");
+    }
+
+    @DeleteMapping("/{id}/dislike/{userId}")
+    public void deleteDisLike(@PathVariable("id") long reviewId, @PathVariable long userId) {
+        reviewService.deleteLike(reviewId, userId, "DISLIKE");
     }
 }

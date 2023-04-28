@@ -8,8 +8,8 @@ import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLike;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.review.ReviewDbStorage;
-import ru.yandex.practicum.filmorate.storage.review.ReviewLikeDbStorage;
+import ru.yandex.practicum.filmorate.storage.review.ReviewLikeStorage;
+import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 
 import java.util.List;
 
@@ -17,54 +17,36 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ReviewService {
-    private final ReviewDbStorage reviewDbStorage;
+    private final ReviewStorage reviewDbStorage;
     private final UserService userService;
     private final FilmService filmService;
-    private final ReviewLikeDbStorage reviewLikeDbStorage;
+    private final ReviewLikeStorage reviewLikeDbStorage;
 
-    public void addLike(long reviewId, long userId) {
+    public void addLike(long reviewId, long userId, String type) {
         User user = userService.getUser(userId);
         Review review = getReviewById(reviewId);
-
         ReviewLike like = reviewLikeDbStorage.getLike(review.getReviewId(), user.getId());
-        if (like != null && "LIKE".equalsIgnoreCase(like.getType())) {
-            throw new ResourceHasATwinException(String.format("Пользователь с id - %s уже ставил лайк отзыву с id - %s",
-                    userId, reviewId));
-        } else if (like != null && "DISLIKE".equalsIgnoreCase(like.getType())) {
-            reviewLikeDbStorage.deleteDislike(reviewId, userId);
+        if (like != null && type.equalsIgnoreCase(like.getType())) {
+            throw new ResourceHasATwinException(String.format("Пользователь с id - %s уже ставил %s отзыву с id - %s",
+                    userId, type, reviewId));
+        } else if (like != null && !type.equalsIgnoreCase(like.getType())) {
+            reviewLikeDbStorage.deleteLike(reviewId, userId, like.getType());
         }
-        reviewLikeDbStorage.addLike(reviewId, userId);
-        reviewDbStorage.changeUseful(reviewId, userId, 1);
+        reviewLikeDbStorage.addLike(reviewId, userId, type);
 
-        log.info("Пользователь c id {} поставил отзыву с id {} лайк", userId, reviewId);
-    }
-
-    public void addDisLike(long reviewId, long userId) {
-        User user = userService.getUser(userId);
-        Review review = getReviewById(reviewId);
-        ReviewLike like = reviewLikeDbStorage.getLike(reviewId, userId);
-        if (like != null && "DISLIKE".equalsIgnoreCase(like.getType())) {
-            throw new ResourceHasATwinException(String.format("Пользователь с id - %s уже ставил дизлайк отзыву с id - %s",
-                    userId, reviewId));
-        } else if (like != null && "LIKE".equalsIgnoreCase(like.getType())) {
-            deleteLike(reviewId, userId);
+        int operation;
+        if (type.equalsIgnoreCase("LIKE")) {
+            operation = 1;
+        } else {
+            operation = -1;
         }
-        reviewLikeDbStorage.addDislike(reviewId, userId);
-        reviewDbStorage.changeUseful(reviewId, userId, -1);
-
-        log.info("Пользователь c id {} поставил отзыву с id {} дизлайк", userId, reviewId);
+        reviewDbStorage.changeUseful(reviewId, userId, operation);
     }
 
-    public void deleteDisLike(long reviewId, long userId) {
+    public void deleteLike(long reviewId, long userId, String type) {
         User user = userService.getUser(userId);
         Review review = getReviewById(reviewId);
-        reviewLikeDbStorage.deleteDislike(reviewId, userId);
-    }
-
-    public void deleteLike(long reviewId, long userId) {
-        User user = userService.getUser(userId);
-        Review review = getReviewById(reviewId);
-        reviewLikeDbStorage.deleteLike(review.getReviewId(), user.getId());
+        reviewLikeDbStorage.deleteLike(review.getReviewId(), user.getId(), type);
     }
 
     public Review create(Review review) {

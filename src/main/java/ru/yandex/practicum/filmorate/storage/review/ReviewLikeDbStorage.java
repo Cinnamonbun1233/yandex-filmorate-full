@@ -14,8 +14,8 @@ import java.sql.SQLException;
 public class ReviewLikeDbStorage implements ReviewLikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
-    public void addLike(long reviewId, long userId) {
-        String sql = "INSERT INTO review_like VALUES(?,?,'LIKE')";
+    public void addLike(long reviewId, long userId, String type) {
+        String sql = String.format("INSERT INTO review_like VALUES(?,?,'%s')", type);
         jdbcTemplate.update(sql, reviewId, userId);
     }
 
@@ -28,23 +28,13 @@ public class ReviewLikeDbStorage implements ReviewLikeStorage {
         }
     }
 
+    public void deleteLike(long reviewId, long userId, String type) {
+        String sql = String.format("DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND type = '%s'", type);
+        jdbcTemplate.update(sql, reviewId, userId);
+    }
+
     private ReviewLike makeReviewLike(ResultSet rs) throws SQLException {
         return new ReviewLike(rs.getInt("review_id"),
                 rs.getInt("user_id"), rs.getString("type"));
-    }
-
-    public void addDislike(long reviewId, long userId) {
-        String sql = "INSERT INTO review_like VALUES(?,?,'DISLIKE')";
-        jdbcTemplate.update(sql, reviewId, userId);
-    }
-
-    public void deleteLike(long reviewId, long userId) {
-        String sql = "DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND type = 'LIKE'";
-        jdbcTemplate.update(sql, reviewId, userId);
-    }
-
-    public void deleteDislike(long reviewId, long userId) {
-        String sql = "DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND type = 'DISLIKE'";
-        jdbcTemplate.update(sql, reviewId, userId);
     }
 }

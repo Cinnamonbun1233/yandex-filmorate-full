@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.review;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +19,6 @@ import java.util.Map;
 @Slf4j
 public class ReviewDbStorage implements ReviewStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();
-
 
     public void changeUseful(long reviewId, long userId, int operation) {
         String sql = "UPDATE REVIEWS SET rating = rating + ? WHERE id = ?";
@@ -39,18 +36,6 @@ public class ReviewDbStorage implements ReviewStorage {
         }
     }
 
-    private Review makeReview(ResultSet rs) throws SQLException {
-        long id = rs.getInt("id");
-        return Review.builder()
-                .reviewId(id)
-                .content(rs.getString("content"))
-                .isPositive(rs.getBoolean("type"))
-                .userId(rs.getLong("user_id"))
-                .filmId(rs.getLong("film_id"))
-                .useful(rs.getInt("rating"))
-                .build();
-    }
-
     @SneakyThrows
     public Review create(Review review) {
         SimpleJdbcInsert jdbcInsert = new SimpleJdbcInsert(jdbcTemplate).withTableName("reviews")
@@ -61,7 +46,6 @@ public class ReviewDbStorage implements ReviewStorage {
                 "film_id", review.getFilmId(),
                 "rating", review.getUseful())).longValue();
         review.setReviewId(id);
-        log.info("Создан отзыв - {}", mapper.writeValueAsString(review));
         return review;
     }
 
@@ -72,7 +56,6 @@ public class ReviewDbStorage implements ReviewStorage {
                 review.getContent(),
                 review.getIsPositive(),
                 review.getReviewId());
-        log.info("Обновлен отзыв : {}", mapper.writeValueAsString(review));
         return getReviewById(review.getReviewId());
     }
 
@@ -88,5 +71,17 @@ public class ReviewDbStorage implements ReviewStorage {
         } catch (EmptyResultDataAccessException ex) {
             return null;
         }
+    }
+
+    private Review makeReview(ResultSet rs) throws SQLException {
+        long id = rs.getInt("id");
+        return Review.builder()
+                .reviewId(id)
+                .content(rs.getString("content"))
+                .isPositive(rs.getBoolean("type"))
+                .userId(rs.getLong("user_id"))
+                .filmId(rs.getLong("film_id"))
+                .useful(rs.getInt("rating"))
+                .build();
     }
 }
