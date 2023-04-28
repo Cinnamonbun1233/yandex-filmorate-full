@@ -44,7 +44,7 @@ public class FilmDbStorage implements FilmStorage {
                 .withTableName("FILM")
                 .usingGeneratedKeyColumns("id");
 
-        Long filmId =  simpleJdbcInsert.executeAndReturnKey(filmFields).longValue();
+        Long filmId = simpleJdbcInsert.executeAndReturnKey(filmFields).longValue();
         film.setId(filmId);
 
         updateGenres(film);
@@ -102,7 +102,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // films
         String sqlQuery = "SELECT id, name, description, release_date, duration, rate, mpa FROM film ORDER BY id";
-        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
 
         linkGenresToAllFilms(filmList);
         linkDirectorsToAllFilms(filmList);
@@ -145,12 +145,30 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY COUNT(FILMORATE_LIKE.film_id) DESC " +
                 "LIMIT ?";
 
-        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
         linkGenresToFilms(filmList);
         linkDirectorsToFilms(filmList);
 
         return filmList;
 
+    }
+
+    @Override
+    public List<Film> getCommonFilmsWithFriend(Long userId, Long friendId) {
+
+        String sqlQuery = "WITH common AS (SELECT film_id FROM FILMORATE_LIKE " +
+                "WHERE user_id = ? AND film_id IN (SELECT film_id FROM FILMORATE_LIKE " +
+                "WHERE user_id = ?)) " +
+                "SELECT id, name, description, release_date, duration, rate, MPA,COUNT(user_id) as likes " +
+                "FROM FILM as f " +
+                "LEFT JOIN FILMORATE_LIKE fl ON f.id=fl.film_id " +
+                "WHERE id IN (SELECT * FROM common) " +
+                "GROUP BY f.id " +
+                "ORDER BY likes DESC";
+
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), userId, friendId);
+        linkGenresToFilms(filmList);
+        return filmList;
     }
 
     @Override
@@ -179,7 +197,7 @@ public class FilmDbStorage implements FilmStorage {
             sqlQuery = sqlQuerySortByLikes;
         }
 
-        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), directorId);
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), directorId);
         linkGenresToFilms(filmList);
         linkDirectorsToFilms(filmList);
 
@@ -269,7 +287,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // all genres
         String sqlQueryAllGenres = "SELECT id, name FROM genre";
-        List<Genre> allGenresList =  jdbcTemplate.query(sqlQueryAllGenres, (rs, rowNum) -> makeGenre(rs));
+        List<Genre> allGenresList = jdbcTemplate.query(sqlQueryAllGenres, (rs, rowNum) -> makeGenre(rs));
         Map<Long, Genre> allGenresListMap = allGenresList.stream().collect(Collectors.toMap(Genre::getId, Function.identity()));
 
         // films' genres
@@ -359,7 +377,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // all directors
         String sqlQueryAllDirectors = "SELECT id, name FROM director";
-        List<Director> allDirectorsList =  jdbcTemplate.query(sqlQueryAllDirectors, (rs, rowNum) -> makeDirector(rs));
+        List<Director> allDirectorsList = jdbcTemplate.query(sqlQueryAllDirectors, (rs, rowNum) -> makeDirector(rs));
         Map<Long, Director> allDirectorsListMap = allDirectorsList
                 .stream()
                 .collect(Collectors.toMap(Director::getId, Function.identity()));
