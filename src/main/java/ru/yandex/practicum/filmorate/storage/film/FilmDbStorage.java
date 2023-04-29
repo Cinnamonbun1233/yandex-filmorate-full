@@ -140,25 +140,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getMostPopularFilms(Integer count) {
-
-        // films
-        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa " +
-                "FROM film f " +
-                "LEFT JOIN FILMORATE_LIKE ON f.id = FILMORATE_LIKE.film_id " +
-                "GROUP BY f.id " +
-                "ORDER BY COUNT(FILMORATE_LIKE.film_id) DESC " +
-                "LIMIT ?";
-
-        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
-        linkGenresToFilms(filmList);
-        linkDirectorsToFilms(filmList);
-
-        return filmList;
-
-    }
-
-    @Override
     public List<Film> getMostPopularFilms(Integer count, Integer genre, Integer year) {
         final StringBuilder sqlBuilder = new StringBuilder(
                 "SELECT * " +

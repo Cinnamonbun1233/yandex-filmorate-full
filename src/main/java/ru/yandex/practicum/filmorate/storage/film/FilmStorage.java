@@ -18,8 +18,6 @@ public interface FilmStorage {
     // FILMS - Checking
     boolean hasTwin(Film film);
 
-    List<Film> getMostPopularFilms(Integer count);
-
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
     List<Film> getMostPopularFilms(Integer count, Integer genre, Integer year);
