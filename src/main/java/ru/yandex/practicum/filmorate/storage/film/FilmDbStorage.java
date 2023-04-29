@@ -111,6 +111,27 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    @Override
+    public void deleteFilmById(Long filmId) {
+        String filmSqlQuery = "DELETE FROM FILM WHERE ID = ?";
+        jdbcTemplate.update(filmSqlQuery, filmId);
+    }
+
+    @Override
+    public List<Film> getFilms(List<Long> filmIds) {
+
+        String sqlQuery = "SELECT id, name, description, release_date, duration, rate, mpa FROM film WHERE id IN (%s) ORDER BY id";
+        String sqlParam = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        sqlQuery = String.format(sqlQuery, sqlParam);
+        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), filmIds.toArray());
+
+        linkGenresToFilms(filmList);
+        linkDirectorsToFilms(filmList);
+
+        return filmList;
+
+    }
+
 
     // FILMS - Checking
     @Override

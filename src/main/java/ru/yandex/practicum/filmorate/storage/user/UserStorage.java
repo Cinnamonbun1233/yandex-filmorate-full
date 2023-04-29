@@ -15,6 +15,8 @@ public interface UserStorage {
 
     List<User> getUsers();
 
+    void deleteUserById(Long userId);
+
     // USERS - Checking
     boolean emailAlreadyUsed(String email);
 
