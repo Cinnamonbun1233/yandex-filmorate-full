@@ -15,6 +15,8 @@ public interface FilmStorage {
 
     List<Film> getFilms();
 
+    List<Film> getFilms(List<Long> filmIds);
+
     // FILMS - Checking
     boolean hasTwin(Film film);
 
