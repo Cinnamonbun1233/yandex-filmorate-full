@@ -126,7 +126,6 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
-
     // FILMS - Checking
     @Override
     public boolean hasTwin(Film film) {

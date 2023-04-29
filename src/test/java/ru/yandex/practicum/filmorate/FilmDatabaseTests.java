@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -187,4 +188,17 @@ public class FilmDatabaseTests {
 
     }
 
+    @Test
+    public void deleteFilmTest() {
+       filmStorage.addFilm(Film.builder()
+               .name("The Shawshank Redemption")
+               .description("Nominated for 7 Oscars")
+               .releaseDate(LocalDate.of(1994, 9, 22))
+               .duration(144)
+               .mpa(Mpa.G)
+               .build());
+        filmStorage.deleteFilmById(1L);
+        List<Film> films = filmStorage.getFilms();
+        assertTrue(films.isEmpty());
+    }
 }

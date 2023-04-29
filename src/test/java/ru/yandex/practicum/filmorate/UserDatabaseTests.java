@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -130,4 +131,16 @@ class UserDatabaseTests {
 
     }
 
+    @Test
+    public void deleteUserTest() {
+        userStorage.addUser(User.builder()
+                .name("John Winston Lennon")
+                .email("john@beatles.uk")
+                .login("john")
+                .birthday(LocalDate.of(1940, 10, 9))
+                .build());
+        userStorage.deleteUserById(1L);
+        List<User> users = userStorage.getUsers();
+        assertTrue(users.isEmpty());
+    }
 }

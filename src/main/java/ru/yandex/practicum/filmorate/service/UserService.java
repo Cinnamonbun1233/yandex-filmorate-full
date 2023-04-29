@@ -110,6 +110,9 @@ public class UserService {
 
     }
 
+    public void deleteUserById(Long userId) {
+        userStorage.deleteUserById(userId);
+    }
 
     // FRIENDS
     public void addConnection(Long userId, Long friendId) {
