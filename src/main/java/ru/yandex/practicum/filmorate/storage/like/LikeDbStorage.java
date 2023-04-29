@@ -47,7 +47,7 @@ public class LikeDbStorage implements LikeStorage {
 
     }
 
-    // SEARCH - здесь тот ещё квест был. Т.к. лайки не хранятся в фильмах, пришлось попотеть
+    // SEARCH
     @Override
     public List<Film> sortFilmsByLikes(List<Film> filmList) {
         Map<Film, Integer> map = new HashMap<>();

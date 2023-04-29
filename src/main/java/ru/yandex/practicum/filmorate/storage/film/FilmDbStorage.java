@@ -406,40 +406,31 @@ public class FilmDbStorage implements FilmStorage {
     // SEARCH
     @Override
     public List<Film> searchInFilms(String query) {
-        List<Film> result = new ArrayList<>();
 
-        List<Film> filmList = searchPopularFilms();
+        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa " +
+                "FROM film f " +
+                "LEFT JOIN FILMORATE_LIKE fl ON f.id = fl.film_id " +
+                "WHERE LCASE(f.name) LIKE '%" + query + "%' " +
+                "GROUP BY f.id " +
+                "ORDER BY COUNT(fl.film_id) DESC";
 
-        for (Film film : filmList) {
-            if (film.getName().toLowerCase().contains(query.toLowerCase())) {
-                result.add(film);
-            }
-        }
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
 
-        return result;
+        linkGenresToFilms(filmList);
+        linkDirectorsToFilms(filmList);
+
+        return filmList;
     }
 
     @Override
     public List<Film> searchInDirectors(String query) {
-        List<Film> result = new ArrayList<>();
 
-        List<Film> filmList = searchPopularFilms();
-
-        for (Film film : filmList) {
-            for (Director director : film.getDirectors()) {
-                if (director.getName().toLowerCase().contains(query.toLowerCase())) {
-                    result.add(film);
-                }
-            }
-        }
-
-        return result;
-    }
-
-    private List<Film> searchPopularFilms() {
-        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa " +
+        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa, d.name " +
                 "FROM film f " +
-                "LEFT JOIN FILMORATE_LIKE fl ON f.id = fl.film_id " +
+                "LEFT JOIN filmorate_like fl ON f.id = fl.film_id " +
+                "LEFT JOIN film_director fd on f.id = fd.film_id " +
+                "LEFT JOIN director d on fd.director_id = d.id " +
+                "WHERE LCASE(d.name) LIKE '%" + query + "%' " +
                 "GROUP BY f.id " +
                 "ORDER BY COUNT(fl.film_id) DESC";
 
