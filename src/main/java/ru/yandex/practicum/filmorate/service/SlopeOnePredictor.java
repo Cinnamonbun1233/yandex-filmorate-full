@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 
 public class SlopeOnePredictor {
 
-	private Map<Long, HashMap<Long, Double>> inputData; // user_id, item_id
-	private List<Long> items; // item_id
-	private Map<Long, Map<Long, Double>> diff = new HashMap<>(); // item_id, item_id
-	private Map<Long, Map<Long, Integer>> freq = new HashMap<>(); // item_id, item_id
-	private Map<Long, HashMap<Long, Double>> outputData = new HashMap<>(); // user_id, item_id
+	private final Map<Long, HashMap<Long, Double>> inputData; // user_id, item_id
+	private final List<Long> items; // item_id
+	private final Map<Long, Map<Long, Double>> diff = new HashMap<>(); // item_id, item_id
+	private final Map<Long, Map<Long, Integer>> freq = new HashMap<>(); // item_id, item_id
+	private final Map<Long, HashMap<Long, Double>> outputData = new HashMap<>(); // user_id, item_id
 
 	public SlopeOnePredictor(Map<Long, HashMap<Long, Double>> inputData) {
 
@@ -94,6 +94,7 @@ public class SlopeOnePredictor {
 						uPred.put(k, uPred.get(k) + finalValue);
 						uFreq.put(k, uFreq.get(k) + freq.get(k).get(j).intValue());
 					} catch (NullPointerException e1) {
+						double predictedValue = -1;
 					}
 				}
 			}
