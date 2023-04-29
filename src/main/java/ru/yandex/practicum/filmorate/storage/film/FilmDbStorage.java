@@ -126,6 +126,12 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    @Override
+    public void deleteFilmById(Long filmId) {
+        String filmSqlQuery = "DELETE FROM FILM WHERE ID = ?";
+        jdbcTemplate.update(filmSqlQuery, filmId);
+    }
+
     // FILMS - Checking
     @Override
     public boolean hasTwin(Film film) {
