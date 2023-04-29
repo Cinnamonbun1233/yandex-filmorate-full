@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
@@ -12,7 +14,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -23,6 +27,7 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     // FILMS - CRUD
     @Override
@@ -44,7 +49,7 @@ public class FilmDbStorage implements FilmStorage {
                 .withTableName("FILM")
                 .usingGeneratedKeyColumns("id");
 
-        Long filmId =  simpleJdbcInsert.executeAndReturnKey(filmFields).longValue();
+        Long filmId = simpleJdbcInsert.executeAndReturnKey(filmFields).longValue();
         film.setId(filmId);
 
         updateGenres(film);
@@ -102,7 +107,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // films
         String sqlQuery = "SELECT id, name, description, release_date, duration, rate, mpa FROM film ORDER BY id";
-        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
 
         linkGenresToAllFilms(filmList);
         linkDirectorsToAllFilms(filmList);
@@ -145,12 +150,50 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY COUNT(FILMORATE_LIKE.film_id) DESC " +
                 "LIMIT ?";
 
-        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
         linkGenresToFilms(filmList);
         linkDirectorsToFilms(filmList);
 
         return filmList;
 
+    }
+
+    @Override
+    public List<Film> getMostPopularFilms(Integer count, Integer genre, Integer year) {
+        final StringBuilder sqlBuilder = new StringBuilder(
+                "SELECT * " +
+                        "FROM film " +
+                        "LEFT JOIN filmorate_like AS fl ON film.id = fl.film_id "
+        );
+        if (genre != null && year != null) {
+            sqlBuilder.append(
+                    "LEFT JOIN film_genre AS fg ON film.id = fg.film_id " +
+                            "WHERE fg.genre_id = :genre " +
+                            "AND EXTRACT(YEAR FROM cast(release_date AS date)) = :year ");
+        }
+        if (genre != null && year == null) {
+            sqlBuilder.append(
+                    "LEFT JOIN film_genre AS fg ON film.id = fg.film_id " +
+                            "WHERE fg.genre_id = :genre ");
+        }
+        if (genre == null && year != null) {
+            sqlBuilder.append(
+                    "WHERE EXTRACT(YEAR FROM cast(release_date AS date)) = :year ");
+        }
+        sqlBuilder.append(
+                "GROUP BY film.id, fl.film_id " +
+                        "ORDER BY COUNT(fl.film_id) DESC " +
+                        "LIMIT :count ;"
+        );
+
+        final String sql = sqlBuilder.toString();
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource("count", count)
+                .addValue("genre", genre)
+                .addValue("year", year);
+        List<Film> filmList = namedParameterJdbcTemplate.query(sql, mapSqlParameterSource,
+                (rs, rowNum) -> makeFilm(rs));
+        linkGenresToAllFilms(filmList);
+        return filmList;
     }
 
     @Override
@@ -179,7 +222,7 @@ public class FilmDbStorage implements FilmStorage {
             sqlQuery = sqlQuerySortByLikes;
         }
 
-        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), directorId);
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), directorId);
         linkGenresToFilms(filmList);
         linkDirectorsToFilms(filmList);
 
@@ -269,7 +312,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // all genres
         String sqlQueryAllGenres = "SELECT id, name FROM genre";
-        List<Genre> allGenresList =  jdbcTemplate.query(sqlQueryAllGenres, (rs, rowNum) -> makeGenre(rs));
+        List<Genre> allGenresList = jdbcTemplate.query(sqlQueryAllGenres, (rs, rowNum) -> makeGenre(rs));
         Map<Long, Genre> allGenresListMap = allGenresList.stream().collect(Collectors.toMap(Genre::getId, Function.identity()));
 
         // films' genres
@@ -359,7 +402,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // all directors
         String sqlQueryAllDirectors = "SELECT id, name FROM director";
-        List<Director> allDirectorsList =  jdbcTemplate.query(sqlQueryAllDirectors, (rs, rowNum) -> makeDirector(rs));
+        List<Director> allDirectorsList = jdbcTemplate.query(sqlQueryAllDirectors, (rs, rowNum) -> makeDirector(rs));
         Map<Long, Director> allDirectorsListMap = allDirectorsList
                 .stream()
                 .collect(Collectors.toMap(Director::getId, Function.identity()));

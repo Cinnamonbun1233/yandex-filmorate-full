@@ -75,7 +75,6 @@ public class FilmController {
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
     }
 
-
     // LIKES
     @PutMapping("{id}/like/{userId}") // idempotent
     public void putLike(@PathVariable @Positive Long id, @PathVariable @Positive Long userId) {
@@ -96,6 +95,13 @@ public class FilmController {
 
         return filmService.getMostPopularFilms(count);
 
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count,
+                                          @RequestParam(required = false) Integer genreId,
+                                          @RequestParam(required = false) Integer year) {
+        return filmService.getMostPopularFilms(count, genreId, year);
     }
 
     // DIRECTOR

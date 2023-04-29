@@ -101,7 +101,6 @@ public class FilmService {
 
     }
 
-
     // LIKES
     public void addLike(Long filmId, Long userId) {
 
@@ -159,6 +158,9 @@ public class FilmService {
 
     }
 
+    public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getMostPopularFilms(count, genreId, year);
+    }
 
     // GENRE
     public Genre addGenre(Genre genre) {
