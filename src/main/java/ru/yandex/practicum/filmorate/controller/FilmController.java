@@ -69,10 +69,6 @@ public class FilmController {
 
     }
 
-    @DeleteMapping("/{filmId}")
-    public void deleteFilmById(@PathVariable Long filmId) {
-        filmService.deleteFilmById(filmId);
-    }
 
     // LIKES
     @PutMapping("{id}/like/{userId}") // idempotent

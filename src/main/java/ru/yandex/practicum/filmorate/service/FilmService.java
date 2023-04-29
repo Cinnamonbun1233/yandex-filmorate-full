@@ -91,10 +91,6 @@ public class FilmService {
 
     }
 
-    public void deleteFilmById(Long filmId) {
-        filmStorage.deleteFilmById(filmId);
-    }
-
     public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
 
         // checking
