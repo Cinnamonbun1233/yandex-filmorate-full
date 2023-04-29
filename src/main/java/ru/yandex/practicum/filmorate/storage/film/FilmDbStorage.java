@@ -117,6 +117,22 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(filmSqlQuery, filmId);
     }
 
+    @Override
+    public List<Film> getFilms(List<Long> filmIds) {
+
+        String sqlQuery = "SELECT id, name, description, release_date, duration, rate, mpa FROM film WHERE id IN (%s) ORDER BY id";
+        String sqlParam = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        sqlQuery = String.format(sqlQuery, sqlParam);
+        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), filmIds.toArray());
+
+        linkGenresToFilms(filmList);
+        linkDirectorsToFilms(filmList);
+
+        return filmList;
+
+    }
+
+
     // FILMS - Checking
     @Override
     public boolean hasTwin(Film film) {
