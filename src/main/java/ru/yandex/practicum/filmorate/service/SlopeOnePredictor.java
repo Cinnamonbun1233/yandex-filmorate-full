@@ -37,7 +37,7 @@ public class SlopeOnePredictor {
 	public HashMap<Long, Double> getPrediction(Long userId) {
 
 		HashMap<Long, Double> prediction = outputData.getOrDefault(userId, new HashMap<>());
-		while (prediction.values().remove(null));
+		while (prediction.values().remove(null)) ;
 		return prediction;
 
 	}
@@ -93,9 +93,8 @@ public class SlopeOnePredictor {
 						double finalValue = predictedValue * freq.get(k).get(j).intValue();
 						uPred.put(k, uPred.get(k) + finalValue);
 						uFreq.put(k, uFreq.get(k) + freq.get(k).get(j).intValue());
-					}
-					catch (NullPointerException e1) {
-						double predictedValue = -1;
+					} catch (NullPointerException e1) {
+						double predictedValue = -1.0;
 					}
 				}
 			}
