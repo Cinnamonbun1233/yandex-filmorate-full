@@ -174,6 +174,7 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> filmList = namedParameterJdbcTemplate.query(sql, mapSqlParameterSource,
                 (rs, rowNum) -> makeFilm(rs));
         linkGenresToAllFilms(filmList);
+        linkDirectorsToAllFilms(filmList);
         return filmList;
     }
 
@@ -241,7 +242,6 @@ public class FilmDbStorage implements FilmStorage {
                 .duration(resultSet.getInt("duration"))
                 .rate(resultSet.getByte("rate"))
                 .mpa(Mpa.getMpa(resultSet.getLong("mpa")))
-                .directors(new ArrayList<>())
                 .build();
 
     }
