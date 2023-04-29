@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.utils.SlopeOnePredictor;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -213,7 +214,7 @@ public class UserService {
         List<Long> recommendedFilmsId = predictedRate.entrySet()
                 .stream()
                 .filter(es -> es.getValue() > 0)
-                .map(es -> es.getKey())
+                .map(Map.Entry::getKey)
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
 

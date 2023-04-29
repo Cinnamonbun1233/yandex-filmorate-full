@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.utils;
 
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -26,10 +26,11 @@ public class SlopeOnePredictor {
 		buildDifferencesMatrix();
 		buildPredictions();
 
-		System.out.println("Slope One - Before the Prediction");
-		printData(inputData);
-		System.out.println("Slope One - With Predictions");
-		printData(outputData);
+		// debug
+//		System.out.println("Slope One - Before the Prediction");
+//		printData(inputData);
+//		System.out.println("Slope One - With Predictions");
+//		printData(outputData);
 
 	}
 
