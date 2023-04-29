@@ -210,7 +210,7 @@ public class UserService {
         List<Long> recommendedFilmsId = predictedRate.entrySet()
                 .stream()
                 .filter(es -> es.getValue() > 0)
-                .map(es -> es.getKey())
+                .map(Map.Entry::getKey)
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
 
