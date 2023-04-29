@@ -241,6 +241,7 @@ public class FilmDbStorage implements FilmStorage {
                 .duration(resultSet.getInt("duration"))
                 .rate(resultSet.getByte("rate"))
                 .mpa(Mpa.getMpa(resultSet.getLong("mpa")))
+                .directors(new ArrayList<>())
                 .build();
 
     }
