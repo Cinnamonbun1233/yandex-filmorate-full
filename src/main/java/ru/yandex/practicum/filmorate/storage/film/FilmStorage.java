@@ -24,6 +24,8 @@ public interface FilmStorage {
 
     List<Film> getMostPopularFilms(Integer count);
 
+    public List<Film> getCommonFilmsWithFriend(Long userId, Long friendId);
+
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
     // RESET STORAGE
