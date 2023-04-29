@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.EmailLoginAlreadyUsed;
 import ru.yandex.practicum.filmorate.exception.FriendToYourselfException;
 import ru.yandex.practicum.filmorate.exception.IncorrectIdException;
@@ -66,11 +65,10 @@ public class UserController {
 
     }
 
-    @DeleteMapping("/{id}")
-    public User deleteUser() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    @DeleteMapping("/{userId}")
+    public void deleteUserById(@PathVariable Long userId) {
+        userService.deleteUserById(userId);
     }
-
 
     // FRIENDS
     @PutMapping("{id}/friends/{friendId}")
