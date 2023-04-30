@@ -128,7 +128,7 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "SELECT id, name, description, release_date, duration, rate, mpa FROM film WHERE id IN (%s) ORDER BY id";
         String sqlParam = String.join(",", Collections.nCopies(filmIds.size(), "?"));
         sqlQuery = String.format(sqlQuery, sqlParam);
-        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), filmIds.toArray());
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), filmIds.toArray());
 
         linkGenresToFilms(filmList);
         linkDirectorsToFilms(filmList);
@@ -169,14 +169,12 @@ public class FilmDbStorage implements FilmStorage {
         );
         if (genre != null && year != null) {
             sqlBuilder.append(
-                    "LEFT JOIN film_genre AS fg ON film.id = fg.film_id " +
-                            "WHERE fg.genre_id = :genre " +
+                    "WHERE id IN (SELECT film_id FROM film_genre WHERE genre_id = :genre) " +
                             "AND EXTRACT(YEAR FROM cast(release_date AS date)) = :year ");
         }
         if (genre != null && year == null) {
             sqlBuilder.append(
-                    "LEFT JOIN film_genre AS fg ON film.id = fg.film_id " +
-                            "WHERE fg.genre_id = :genre ");
+                    "WHERE id IN (SELECT film_id FROM film_genre WHERE genre_id = :genre) ");
         }
         if (genre == null && year != null) {
             sqlBuilder.append(
