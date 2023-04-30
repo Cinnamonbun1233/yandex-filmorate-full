@@ -31,8 +31,8 @@ public class DirectorDbStorage implements DirectorStorage {
                 .withTableName("DIRECTOR")
                 .usingGeneratedKeyColumns("id");
 
-        Long genreId = simpleJdbcInsert.executeAndReturnKey(directorFields).longValue();
-        director.setId(genreId);
+        Long directorId = simpleJdbcInsert.executeAndReturnKey(directorFields).longValue();
+        director.setId(directorId);
 
         return director;
 
