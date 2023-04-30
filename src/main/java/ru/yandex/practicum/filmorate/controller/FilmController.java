@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.IncorrectIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -70,9 +69,9 @@ public class FilmController {
 
     }
 
-    @DeleteMapping("/{id}")
-    public Film deleteFilm() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    @DeleteMapping("/{filmId}")
+    public void deleteFilmById(@PathVariable Long filmId) {
+        filmService.deleteFilmById(filmId);
     }
 
     // LIKES
@@ -95,6 +94,13 @@ public class FilmController {
                                           @RequestParam(required = false) Integer genreId,
                                           @RequestParam(required = false) Integer year) {
         return filmService.getMostPopularFilms(count, genreId, year);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilmsWithFriend(@RequestParam("userId") Long userId, @RequestParam("friendId") Long friendId) {
+
+        return filmService.getCommonFilmsWithFriend(userId, friendId);
+
     }
 
     // DIRECTOR

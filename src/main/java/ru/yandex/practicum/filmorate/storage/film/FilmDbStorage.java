@@ -116,6 +116,27 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    @Override
+    public void deleteFilmById(Long filmId) {
+        String filmSqlQuery = "DELETE FROM FILM WHERE ID = ?";
+        jdbcTemplate.update(filmSqlQuery, filmId);
+    }
+
+    @Override
+    public List<Film> getFilms(List<Long> filmIds) {
+
+        String sqlQuery = "SELECT id, name, description, release_date, duration, rate, mpa FROM film WHERE id IN (%s) ORDER BY id";
+        String sqlParam = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        sqlQuery = String.format(sqlQuery, sqlParam);
+        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), filmIds.toArray());
+
+        linkGenresToFilms(filmList);
+        linkDirectorsToFilms(filmList);
+
+        return filmList;
+
+    }
+
 
     // FILMS - Checking
     @Override
@@ -175,6 +196,24 @@ public class FilmDbStorage implements FilmStorage {
                 (rs, rowNum) -> makeFilm(rs));
         linkGenresToAllFilms(filmList);
         linkDirectorsToAllFilms(filmList);
+        return filmList;
+    }
+
+    @Override
+    public List<Film> getCommonFilmsWithFriend(Long userId, Long friendId) {
+
+        String sqlQuery = "WITH common AS (SELECT film_id FROM FILMORATE_LIKE " +
+                "WHERE user_id = ? AND film_id IN (SELECT film_id FROM FILMORATE_LIKE " +
+                "WHERE user_id = ?)) " +
+                "SELECT id, name, description, release_date, duration, rate, MPA,COUNT(user_id) as likes " +
+                "FROM FILM as f " +
+                "LEFT JOIN FILMORATE_LIKE fl ON f.id=fl.film_id " +
+                "WHERE id IN (SELECT * FROM common) " +
+                "GROUP BY f.id " +
+                "ORDER BY likes DESC";
+
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), userId, friendId);
+        linkGenresToFilms(filmList);
         return filmList;
     }
 

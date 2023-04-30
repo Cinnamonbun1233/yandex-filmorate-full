@@ -91,6 +91,10 @@ public class FilmService {
 
     }
 
+    public void deleteFilmById(Long filmId) {
+        filmStorage.deleteFilmById(filmId);
+    }
+
     public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
 
         // checking
@@ -154,6 +158,20 @@ public class FilmService {
 
     public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
         return filmStorage.getMostPopularFilms(count, genreId, year);
+    }
+
+    public List<Film> getCommonFilmsWithFriend(Long userId, Long friendId) {
+        // checking
+        User user = userStorage.getUser(userId);
+        User friend = userStorage.getUser(friendId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User", userId);
+        }
+        if (friend == null) {
+            throw new ResourceNotFoundException("User", friendId);
+        }
+
+        return filmStorage.getCommonFilmsWithFriend(userId, friendId);
     }
 
     // GENRE

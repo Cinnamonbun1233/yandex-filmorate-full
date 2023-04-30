@@ -15,8 +15,14 @@ public interface FilmStorage {
 
     List<Film> getFilms();
 
+    List<Film> getFilms(List<Long> filmIds);
+
+    void deleteFilmById(Long filmId);
+
     // FILMS - Checking
     boolean hasTwin(Film film);
+
+    public List<Film> getCommonFilmsWithFriend(Long userId, Long friendId);
 
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
