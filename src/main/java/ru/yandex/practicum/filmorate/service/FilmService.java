@@ -5,7 +5,10 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ResourceHasATwinException;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.event.EventType;
+import ru.yandex.practicum.filmorate.model.event.Operation;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
@@ -25,6 +28,7 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final LikeStorage likeStorage;
     private final DirectorStorage directorStorage;
+    private final EventDbStorage eventDbStorage;
 
     // FILMS
     public Film addFilm(Film film) {
@@ -125,7 +129,7 @@ public class FilmService {
 
         // add like
         likeStorage.addLike(filmId, userId);
-
+        eventDbStorage.addEvent(EventType.LIKE, Operation.ADD, userId, filmId);
     }
 
     public void deleteLike(Long filmId, Long userId) {
@@ -153,7 +157,7 @@ public class FilmService {
         // delete like
         boolean likeDeleted = likeStorage.deleteLike(filmId, userId);
         assert likeDeleted;
-
+        eventDbStorage.addEvent(EventType.LIKE, Operation.REMOVE, userId, filmId);
     }
 
     public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {

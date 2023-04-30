@@ -41,10 +41,10 @@ public class ReviewDbStorage implements ReviewStorage {
     public List<Review> getReviews(Long filmId, int count) {
         String sql;
         if (filmId == null) {
-            sql = "SELECT * FROM REVIEWS ORDER BY rating DESC LIMIT ?";
+            sql = "SELECT * FROM REVIEWS ORDER BY rating DESC, ID LIMIT ?";
             return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), count);
         } else {
-            sql = "SELECT * FROM REVIEWS WHERE film_id=? ORDER BY rating DESC LIMIT ?";
+            sql = "SELECT * FROM REVIEWS WHERE film_id=? ORDER BY rating DESC, ID LIMIT ?";
             return jdbcTemplate.query(sql, (rs, rowNum) -> makeReview(rs), filmId, count);
         }
     }

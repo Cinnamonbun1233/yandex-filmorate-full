@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.FriendToYourselfException;
 import ru.yandex.practicum.filmorate.exception.IncorrectIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Event;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -64,6 +65,11 @@ public class UserController {
 
         return userService.getUsers();
 
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Event> getFeed(@PathVariable("id") Long userId) {
+        return userService.getFeed(userId);
     }
 
     @DeleteMapping("/{userId}")
