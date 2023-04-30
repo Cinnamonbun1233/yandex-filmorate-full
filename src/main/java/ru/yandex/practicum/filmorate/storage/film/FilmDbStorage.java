@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     // FILMS - CRUD
     @Override
@@ -457,7 +460,9 @@ public class FilmDbStorage implements FilmStorage {
                                 "ORDER BY COUNT(fl.film_id) DESC");
             }
             String sqlQuery = sqlQueryBuilder.toString();
-            filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
+            MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource("query", query);
+            filmList = namedParameterJdbcTemplate.query(sqlQuery, mapSqlParameterSource,
+                    (rs, rowNum) -> makeFilm(rs));
 
             linkGenresToFilms(filmList);
             linkDirectorsToFilms(filmList);
@@ -480,7 +485,9 @@ public class FilmDbStorage implements FilmStorage {
                             "ORDER BY COUNT(fl.film_id) DESC");
 
             String sqlQuery = sqlQueryBuilder.toString();
-            filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
+            MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource("query", query);
+            filmList = namedParameterJdbcTemplate.query(sqlQuery, mapSqlParameterSource,
+                    (rs, rowNum) -> makeFilm(rs));
 
             linkGenresToFilms(filmList);
             linkDirectorsToFilms(filmList);
