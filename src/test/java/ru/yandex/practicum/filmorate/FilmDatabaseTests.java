@@ -68,11 +68,11 @@ public class FilmDatabaseTests {
                 .hasFieldOrPropertyWithValue("name", "The Shawshank Redemption")
                 .hasFieldOrPropertyWithValue("description", "Nominated for 7 Oscars");
 
-        film1.setRate((byte)5);
+        film1.setRate((byte) 5);
 
         filmStorage.updateFilm(film1);
         assertThat(film1)
-                .hasFieldOrPropertyWithValue("rate", (byte)5);
+                .hasFieldOrPropertyWithValue("rate", (byte) 5);
 
         List<Film> allFilms = filmStorage.getFilms();
         assertThat(allFilms)
@@ -138,20 +138,20 @@ public class FilmDatabaseTests {
 
         likeStorage.addLike(2L, 1L);
 
-        assertThat(filmStorage.getMostPopularFilms(10).get(0))
+        assertThat(filmStorage.getMostPopularFilms(10, null, null).get(0))
                 .hasFieldOrPropertyWithValue("name", "The Godfather");
 
-        assertThat(filmStorage.getMostPopularFilms(10).get(1))
+        assertThat(filmStorage.getMostPopularFilms(10, null, null).get(1))
                 .hasFieldOrPropertyWithValue("name", "The Shawshank Redemption");
 
 
-        likeStorage.deleteLike(2L,1L);
+        likeStorage.deleteLike(2L, 1L);
         likeStorage.addLike(1L, 1L);
 
-        assertThat(filmStorage.getMostPopularFilms(10).get(0))
+        assertThat(filmStorage.getMostPopularFilms(10, null, null).get(0))
                 .hasFieldOrPropertyWithValue("name", "The Shawshank Redemption");
 
-        assertThat(filmStorage.getMostPopularFilms(10).get(1))
+        assertThat(filmStorage.getMostPopularFilms(10, null, null).get(1))
                 .hasFieldOrPropertyWithValue("name", "The Godfather");
 
         assertThat(likeStorage.hasLike(1L, 1L))

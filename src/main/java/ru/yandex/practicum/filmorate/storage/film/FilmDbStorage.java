@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
@@ -12,7 +14,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -23,6 +27,7 @@ import java.util.stream.Collectors;
 public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     // FILMS - CRUD
     @Override
@@ -123,7 +128,7 @@ public class FilmDbStorage implements FilmStorage {
         String sqlQuery = "SELECT id, name, description, release_date, duration, rate, mpa FROM film WHERE id IN (%s) ORDER BY id";
         String sqlParam = String.join(",", Collections.nCopies(filmIds.size(), "?"));
         sqlQuery = String.format(sqlQuery, sqlParam);
-        List<Film> filmList =  jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), filmIds.toArray());
+        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), filmIds.toArray());
 
         linkGenresToFilms(filmList);
         linkDirectorsToFilms(filmList);
@@ -156,22 +161,40 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getMostPopularFilms(Integer count) {
+    public List<Film> getMostPopularFilms(Integer count, Integer genre, Integer year) {
+        final StringBuilder sqlBuilder = new StringBuilder(
+                "SELECT * " +
+                        "FROM film " +
+                        "LEFT JOIN filmorate_like AS fl ON film.id = fl.film_id "
+        );
+        if (genre != null && year != null) {
+            sqlBuilder.append(
+                    "WHERE id IN (SELECT film_id FROM film_genre WHERE genre_id = :genre) " +
+                            "AND EXTRACT(YEAR FROM cast(release_date AS date)) = :year ");
+        }
+        if (genre != null && year == null) {
+            sqlBuilder.append(
+                    "WHERE id IN (SELECT film_id FROM film_genre WHERE genre_id = :genre) ");
+        }
+        if (genre == null && year != null) {
+            sqlBuilder.append(
+                    "WHERE EXTRACT(YEAR FROM cast(release_date AS date)) = :year ");
+        }
+        sqlBuilder.append(
+                "GROUP BY film.id, fl.film_id " +
+                        "ORDER BY COUNT(fl.film_id) DESC " +
+                        "LIMIT :count ;"
+        );
 
-        // films
-        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa " +
-                "FROM film f " +
-                "LEFT JOIN FILMORATE_LIKE ON f.id = FILMORATE_LIKE.film_id " +
-                "GROUP BY f.id " +
-                "ORDER BY COUNT(FILMORATE_LIKE.film_id) DESC " +
-                "LIMIT ?";
-
-        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
-        linkGenresToFilms(filmList);
-        linkDirectorsToFilms(filmList);
-
+        final String sql = sqlBuilder.toString();
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource("count", count)
+                .addValue("genre", genre)
+                .addValue("year", year);
+        List<Film> filmList = namedParameterJdbcTemplate.query(sql, mapSqlParameterSource,
+                (rs, rowNum) -> makeFilm(rs));
+        linkGenresToAllFilms(filmList);
+        linkDirectorsToAllFilms(filmList);
         return filmList;
-
     }
 
     @Override

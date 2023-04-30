@@ -105,7 +105,6 @@ public class FilmService {
 
     }
 
-
     // LIKES
     public void addLike(Long filmId, Long userId) {
 
@@ -157,10 +156,8 @@ public class FilmService {
 
     }
 
-    public List<Film> getMostPopularFilms(Integer count) {
-
-        return filmStorage.getMostPopularFilms(count);
-
+    public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return filmStorage.getMostPopularFilms(count, genreId, year);
     }
 
     public List<Film> getCommonFilmsWithFriend(Long userId, Long friendId) {
@@ -176,7 +173,6 @@ public class FilmService {
 
         return filmStorage.getCommonFilmsWithFriend(userId, friendId);
     }
-
 
     // GENRE
     public Genre addGenre(Genre genre) {

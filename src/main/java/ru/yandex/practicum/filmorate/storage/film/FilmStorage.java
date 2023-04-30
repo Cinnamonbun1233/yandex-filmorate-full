@@ -22,11 +22,11 @@ public interface FilmStorage {
     // FILMS - Checking
     boolean hasTwin(Film film);
 
-    List<Film> getMostPopularFilms(Integer count);
-
     public List<Film> getCommonFilmsWithFriend(Long userId, Long friendId);
 
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
+
+    List<Film> getMostPopularFilms(Integer count, Integer genre, Integer year);
 
     // RESET STORAGE
     void deleteAllData();
