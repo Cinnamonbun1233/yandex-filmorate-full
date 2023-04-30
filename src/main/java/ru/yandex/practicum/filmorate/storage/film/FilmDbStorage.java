@@ -264,6 +264,9 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM GENRE WHERE (id > 6)");
         jdbcTemplate.update("ALTER TABLE GENRE ALTER COLUMN ID RESTART WITH 7");
 
+        jdbcTemplate.update("DELETE FROM FILMORATE_USER");
+        jdbcTemplate.update("ALTER TABLE FILMORATE_USER ALTER COLUMN ID RESTART WITH 1");
+
     }
 
     // PRIVATE

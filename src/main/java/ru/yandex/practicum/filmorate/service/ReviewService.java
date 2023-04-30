@@ -8,6 +8,9 @@ import ru.yandex.practicum.filmorate.model.LikeType;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewLike;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.EventType;
+import ru.yandex.practicum.filmorate.model.event.Operation;
+import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 
@@ -20,6 +23,7 @@ public class ReviewService {
     private final UserService userService;
     private final FilmService filmService;
     private final ReviewLikeStorage reviewLikeDbStorage;
+    private final EventDbStorage eventDbStorage;
 
     public void addLike(long reviewId, long userId, LikeType type) {
         User user = userService.getUser(userId);
@@ -45,7 +49,9 @@ public class ReviewService {
     public Review create(Review review) {
         userService.getUser(review.getUserId());
         filmService.getFilm(review.getFilmId());
-        return reviewDbStorage.create(review);
+        Review created = reviewDbStorage.create(review);
+        eventDbStorage.addEvent(EventType.REVIEW, Operation.ADD, created.getUserId(), created.getReviewId());
+        return created;
     }
 
     public Review getReviewById(long id) {
@@ -68,10 +74,15 @@ public class ReviewService {
     }
 
     public Review update(Review review) {
-        return reviewDbStorage.update(review);
+        getReviewById(review.getReviewId());
+        Review updated = reviewDbStorage.update(review);
+        eventDbStorage.addEvent(EventType.REVIEW, Operation.UPDATE, updated.getUserId(), updated.getReviewId());
+        return updated;
     }
 
     public void delete(long id) {
+        Review review = getReviewById(id);
         reviewDbStorage.delete(id);
+        eventDbStorage.addEvent(EventType.REVIEW, Operation.REMOVE, review.getUserId(), review.getReviewId());
     }
 }
