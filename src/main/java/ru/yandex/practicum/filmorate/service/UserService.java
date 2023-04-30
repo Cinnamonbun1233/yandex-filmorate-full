@@ -6,6 +6,10 @@ import ru.yandex.practicum.filmorate.exception.EmailLoginAlreadyUsed;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Event;
+import ru.yandex.practicum.filmorate.model.event.EventType;
+import ru.yandex.practicum.filmorate.model.event.Operation;
+import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
@@ -23,6 +27,7 @@ public class UserService {
     private final FriendStorage friendStorage;
     private final FilmStorage filmStorage;
     private final LikeStorage likeStorage;
+    private final EventDbStorage eventDbStorage;
 
     // USERS
     public User addUser(User user) {
@@ -134,7 +139,7 @@ public class UserService {
 
         // add connection
         friendStorage.addFriend(userId, friendId);
-
+        eventDbStorage.addEvent(EventType.FRIEND, Operation.ADD, userId, friendId);
     }
 
     public List<User> getUsersFriends(Long id) {
@@ -169,6 +174,12 @@ public class UserService {
 
     }
 
+    public List<Event> getFeed(Long userId) {
+        // checking
+        User user = getUser(userId);
+        return eventDbStorage.getFeed(user.getId());
+    }
+
     public void deleteConnection(Long userId, Long friendId) {
 
         // checking
@@ -193,7 +204,7 @@ public class UserService {
         // delete connection
         boolean connection1Deleted = friendStorage.deleteFriend(userId, friendId);
         assert connection1Deleted;
-
+        eventDbStorage.addEvent(EventType.FRIEND, Operation.REMOVE, userId, friendId);
     }
 
 
@@ -221,7 +232,6 @@ public class UserService {
         return filmStorage.getFilms(recommendedFilmsId);
 
     }
-
 
 
     // PRIVATE

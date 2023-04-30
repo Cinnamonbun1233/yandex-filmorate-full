@@ -12,7 +12,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -240,6 +242,9 @@ public class FilmDbStorage implements FilmStorage {
 
         jdbcTemplate.update("DELETE FROM GENRE WHERE (id > 6)");
         jdbcTemplate.update("ALTER TABLE GENRE ALTER COLUMN ID RESTART WITH 7");
+
+        jdbcTemplate.update("DELETE FROM FILMORATE_USER");
+        jdbcTemplate.update("ALTER TABLE FILMORATE_USER ALTER COLUMN ID RESTART WITH 1");
 
     }
 
