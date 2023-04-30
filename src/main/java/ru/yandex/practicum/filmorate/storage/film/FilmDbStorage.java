@@ -181,7 +181,7 @@ public class FilmDbStorage implements FilmStorage {
                     "WHERE EXTRACT(YEAR FROM cast(release_date AS date)) = :year ");
         }
         sqlBuilder.append(
-                "GROUP BY film.id, fl.film_id " +
+                "GROUP BY film.id, fl.film_id, fl.user_id " +
                         "ORDER BY COUNT(fl.film_id) DESC " +
                         "LIMIT :count ;"
         );
