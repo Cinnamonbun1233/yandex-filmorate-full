@@ -405,26 +405,9 @@ public class FilmService {
     }
 
     // SEARCH
-    public List<Film> searchInFilmsAndDirectors(String query, String[] by) {
-        List<Film> result = new ArrayList<>();
+    public List<Film> search(String query, String[] by) {
         String lowerCaseQuery = query.toLowerCase();
-
-        if (by.length == 1) {
-            if (by[0].equals("title")) {
-                return filmStorage.searchInFilms(lowerCaseQuery);
-            }
-            if (by[0].equals("director")) {
-                return filmStorage.searchInDirectors(lowerCaseQuery);
-            }
-        }
-
-        if (by.length == 2) {
-            result.addAll(filmStorage.searchInFilms(lowerCaseQuery));
-            result.addAll(filmStorage.searchInDirectors(lowerCaseQuery));
-            return likeStorage.sortFilmsByLikes(result);
-        }
-
-        return new ArrayList<>();
+        return filmStorage.search(lowerCaseQuery, by);
     }
 
 }

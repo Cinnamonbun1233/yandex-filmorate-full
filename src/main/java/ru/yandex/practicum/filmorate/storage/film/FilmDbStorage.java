@@ -405,39 +405,65 @@ public class FilmDbStorage implements FilmStorage {
 
     // SEARCH
     @Override
-    public List<Film> searchInFilms(String query) {
+    public List<Film> search(String query, String[] by) {
+        List<Film> filmList = new ArrayList<>();
 
-        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa " +
-                "FROM film f " +
-                "LEFT JOIN FILMORATE_LIKE fl ON f.id = fl.film_id " +
-                "WHERE LCASE(f.name) LIKE '%" + query + "%' " +
-                "GROUP BY f.id " +
-                "ORDER BY COUNT(fl.film_id) DESC";
+        StringBuilder sqlQueryBuilder = new StringBuilder("SELECT f.id, f.name, f.description, f.release_date, " +
+                "f.duration, f.rate, f.mpa");
 
-        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
+        if (by.length == 1) {
+            if (by[0].equals("title")) {
+                sqlQueryBuilder
+                        .append(" FROM film f " +
+                                "LEFT JOIN filmorate_like fl ON f.id = fl.film_id " +
+                                "WHERE LCASE(f.name) LIKE '%")
+                        .append(query)
+                        .append("%' " +
+                                "GROUP BY f.id " +
+                                "ORDER BY COUNT(fl.film_id) DESC");
+            }
+            if (by[0].equals("director")) {
+                sqlQueryBuilder
+                        .append(", d.name " +
+                                "FROM film f " +
+                                "LEFT JOIN filmorate_like fl ON f.id = fl.film_id " +
+                                "LEFT JOIN film_director fd on f.id = fd.film_id " +
+                                "LEFT JOIN director d on fd.director_id = d.id " +
+                                "WHERE LCASE(d.name) LIKE '%")
+                        .append(query)
+                        .append("%' " +
+                                "GROUP BY f.id " +
+                                "ORDER BY COUNT(fl.film_id) DESC");
+            }
+            String sqlQuery = sqlQueryBuilder.toString();
+            filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
 
-        linkGenresToFilms(filmList);
-        linkDirectorsToFilms(filmList);
+            linkGenresToFilms(filmList);
+            linkDirectorsToFilms(filmList);
+        }
 
-        return filmList;
-    }
+        if (by.length == 2) {
+            sqlQueryBuilder
+                    .append(", d.name " +
+                            "FROM film f " +
+                            "LEFT JOIN filmorate_like fl ON f.id = fl.film_id " +
+                            "LEFT JOIN film_director fd on f.id = fd.film_id " +
+                            "LEFT JOIN director d on fd.director_id = d.id " +
+                            "WHERE LCASE(d.name) LIKE '%")
+                    .append(query)
+                    .append("%' " +
+                            "OR LCASE(f.name) LIKE '%")
+                    .append(query)
+                    .append("%' " +
+                            "GROUP BY f.id " +
+                            "ORDER BY COUNT(fl.film_id) DESC");
 
-    @Override
-    public List<Film> searchInDirectors(String query) {
+            String sqlQuery = sqlQueryBuilder.toString();
+            filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
 
-        String sqlQuery = "SELECT f.id, f.name, f.description, f.release_date, f.duration, f.rate, f.mpa, d.name " +
-                "FROM film f " +
-                "LEFT JOIN filmorate_like fl ON f.id = fl.film_id " +
-                "LEFT JOIN film_director fd on f.id = fd.film_id " +
-                "LEFT JOIN director d on fd.director_id = d.id " +
-                "WHERE LCASE(d.name) LIKE '%" + query + "%' " +
-                "GROUP BY f.id " +
-                "ORDER BY COUNT(fl.film_id) DESC";
-
-        List<Film> filmList = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs));
-
-        linkGenresToFilms(filmList);
-        linkDirectorsToFilms(filmList);
+            linkGenresToFilms(filmList);
+            linkDirectorsToFilms(filmList);
+        }
 
         return filmList;
     }

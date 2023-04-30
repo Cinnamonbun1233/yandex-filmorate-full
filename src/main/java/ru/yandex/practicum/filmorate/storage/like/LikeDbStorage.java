@@ -4,10 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Film;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -45,30 +41,6 @@ public class LikeDbStorage implements LikeStorage {
         int count = jdbcTemplate.queryForObject(sql, Integer.class, filmId, userId);
         return (count > 0);
 
-    }
-
-    // SEARCH
-    @Override
-    public List<Film> sortFilmsByLikes(List<Film> filmList) {
-        Map<Film, Integer> map = new HashMap<>();
-
-        // Сперва выясняем у какого фильма сколько лайков было
-        for (Film film : filmList) {
-            Long filmId = film.getId();
-            String sql = "SELECT count(*) FROM filmorate_like WHERE film_id = " + filmId;
-            int count = jdbcTemplate.queryForObject(sql, Integer.class);
-            map.put(film, count);
-        }
-
-        // Затем сортируем мапу по значениям. Сравниваем значения в мапе между собой,
-        // получаем упорядоченную по значениям мапу. И всегда получаем правильный ответ
-        Map<Film,Integer> result =
-                map.entrySet().stream()
-                        .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-
-        return new ArrayList<>(result.keySet());
     }
 
 }

@@ -25,7 +25,5 @@ public interface FilmStorage {
     // RESET STORAGE
     void deleteAllData();
 
-    List<Film> searchInFilms(String query);
-
-    List<Film> searchInDirectors(String query);
+    List<Film> search(String query, String[] by);
 }
