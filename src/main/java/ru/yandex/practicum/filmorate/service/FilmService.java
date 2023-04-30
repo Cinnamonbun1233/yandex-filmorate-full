@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ResourceHasATwinException;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
+import ru.yandex.practicum.filmorate.exception.SearchIncorrectParametersException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.model.event.EventType;
 import ru.yandex.practicum.filmorate.model.event.Operation;
@@ -420,6 +421,29 @@ public class FilmService {
             addGenre(Genre.builder().name("Боевик").build());
         }
 
+    }
+
+    // SEARCH
+    public List<Film> search(String query, String[] by) {
+        String lowerCaseQuery = query.toLowerCase();
+
+        if (by.length < 1 || by.length > 2) {
+            throw new SearchIncorrectParametersException("Заданы неверные параметры поиска. " +
+                    "Корректны director и title в любом порядке и сочетании");
+        }
+        if (by.length == 1 &&
+                !(by[0].equals("title") || by[0].equals("director"))) {
+            throw new SearchIncorrectParametersException("Заданы неверные параметры поиска. " +
+                    "Корректны director и title в любом порядке и сочетании");
+        }
+        if (by.length == 2 &&
+                (!(by[0].equals("title") || by[0].equals("director")) ||
+                        !(by[1].equals("title") || by[1].equals("director")))) {
+            throw new SearchIncorrectParametersException("Заданы неверные параметры поиска. " +
+                    "Корректны director и title в любом порядке и сочетании");
+        }
+
+        return filmStorage.search(lowerCaseQuery, by);
     }
 
 }

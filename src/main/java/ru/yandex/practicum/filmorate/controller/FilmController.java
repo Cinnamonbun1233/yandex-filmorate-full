@@ -112,4 +112,11 @@ public class FilmController {
 
     }
 
+    // SEARCH
+    @GetMapping("/search")
+    public List<Film> searchInFilmsAndDirectors(@RequestParam String query,
+                                                @RequestParam String[] by) {
+        return filmService.search(query, by);
+    }
+
 }

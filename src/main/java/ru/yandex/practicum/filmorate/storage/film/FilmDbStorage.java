@@ -468,4 +468,73 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    // SEARCH
+    @Override
+    public List<Film> search(String query, String[] by) {
+        List<Film> filmList = new ArrayList<>();
+
+        StringBuilder sqlQueryBuilder = new StringBuilder("SELECT f.id, f.name, f.description, f.release_date, " +
+                "f.duration, f.rate, f.mpa");
+
+        if (by.length == 1) {
+            if (by[0].equals("title")) {
+                sqlQueryBuilder
+                        .append(" FROM film f " +
+                                "LEFT JOIN filmorate_like fl ON f.id = fl.film_id " +
+                                "WHERE LCASE(f.name) LIKE '%")
+                        .append(query)
+                        .append("%' " +
+                                "GROUP BY f.id " +
+                                "ORDER BY COUNT(fl.film_id) DESC");
+            }
+            if (by[0].equals("director")) {
+                sqlQueryBuilder
+                        .append(", d.name " +
+                                "FROM film f " +
+                                "LEFT JOIN filmorate_like fl ON f.id = fl.film_id " +
+                                "LEFT JOIN film_director fd on f.id = fd.film_id " +
+                                "LEFT JOIN director d on fd.director_id = d.id " +
+                                "WHERE LCASE(d.name) LIKE '%")
+                        .append(query)
+                        .append("%' " +
+                                "GROUP BY f.id " +
+                                "ORDER BY COUNT(fl.film_id) DESC");
+            }
+            String sqlQuery = sqlQueryBuilder.toString();
+            MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource("query", query);
+            filmList = namedParameterJdbcTemplate.query(sqlQuery, mapSqlParameterSource,
+                    (rs, rowNum) -> makeFilm(rs));
+
+            linkGenresToFilms(filmList);
+            linkDirectorsToFilms(filmList);
+        }
+
+        if (by.length == 2) {
+            sqlQueryBuilder
+                    .append(", d.name " +
+                            "FROM film f " +
+                            "LEFT JOIN filmorate_like fl ON f.id = fl.film_id " +
+                            "LEFT JOIN film_director fd on f.id = fd.film_id " +
+                            "LEFT JOIN director d on fd.director_id = d.id " +
+                            "WHERE LCASE(d.name) LIKE '%")
+                    .append(query)
+                    .append("%' " +
+                            "OR LCASE(f.name) LIKE '%")
+                    .append(query)
+                    .append("%' " +
+                            "GROUP BY f.id " +
+                            "ORDER BY COUNT(fl.film_id) DESC");
+
+            String sqlQuery = sqlQueryBuilder.toString();
+            MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource("query", query);
+            filmList = namedParameterJdbcTemplate.query(sqlQuery, mapSqlParameterSource,
+                    (rs, rowNum) -> makeFilm(rs));
+
+            linkGenresToFilms(filmList);
+            linkDirectorsToFilms(filmList);
+        }
+
+        return filmList;
+    }
+
 }

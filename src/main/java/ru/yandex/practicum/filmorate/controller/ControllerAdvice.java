@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.IncorrectIdException;
 import ru.yandex.practicum.filmorate.exception.ResourceHasATwinException;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
+import ru.yandex.practicum.filmorate.exception.SearchIncorrectParametersException;
 
 import javax.validation.ConstraintViolationException;
 
@@ -50,6 +51,12 @@ public class ControllerAdvice {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleResourceHasATwinException(final ResourceHasATwinException e) {
         return new ErrorResponse(HttpStatus.CONFLICT, "Incorrect operation", e.getMessage());
+    }
+
+    @ExceptionHandler(SearchIncorrectParametersException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleSearchIncorrectParametersException(final SearchIncorrectParametersException e) {
+        return new ErrorResponse(HttpStatus.BAD_REQUEST, "Incorrect operation", e.getMessage());
     }
 
     @ExceptionHandler

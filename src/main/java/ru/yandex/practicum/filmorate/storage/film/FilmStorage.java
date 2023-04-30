@@ -31,4 +31,5 @@ public interface FilmStorage {
     // RESET STORAGE
     void deleteAllData();
 
+    List<Film> search(String query, String[] by);
 }

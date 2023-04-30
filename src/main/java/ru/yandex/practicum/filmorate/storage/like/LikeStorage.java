@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.like;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public interface LikeStorage {
 
     // CRUD
