@@ -4,12 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.IncorrectIdException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -69,11 +69,10 @@ public class FilmController {
 
     }
 
-    @DeleteMapping("/{id}")
-    public Film deleteFilm() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    @DeleteMapping("/{filmId}")
+    public void deleteFilmById(@PathVariable Long filmId) {
+        filmService.deleteFilmById(filmId);
     }
-
 
     // LIKES
     @PutMapping("{id}/like/{userId}") // idempotent
@@ -91,10 +90,33 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = topFilmsSize) @Positive Integer count) {
+    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count,
+                                          @RequestParam(required = false) Integer genreId,
+                                          @RequestParam(required = false) Integer year) {
+        return filmService.getMostPopularFilms(count, genreId, year);
+    }
 
-        return filmService.getMostPopularFilms(count);
+    @GetMapping("/common")
+    public List<Film> getCommonFilmsWithFriend(@RequestParam("userId") Long userId, @RequestParam("friendId") Long friendId) {
 
+        return filmService.getCommonFilmsWithFriend(userId, friendId);
+
+    }
+
+    // DIRECTOR
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable @Positive Long directorId,
+                                         @RequestParam @Pattern(regexp = "year|likes") String sortBy) {
+
+        return filmService.getFilmsByDirector(directorId, sortBy);
+
+    }
+
+    // SEARCH
+    @GetMapping("/search")
+    public List<Film> searchInFilmsAndDirectors(@RequestParam String query,
+                                                @RequestParam String[] by) {
+        return filmService.search(query, by);
     }
 
 }

@@ -4,11 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 import ru.yandex.practicum.filmorate.exception.EmailLoginAlreadyUsed;
 import ru.yandex.practicum.filmorate.exception.FriendToYourselfException;
 import ru.yandex.practicum.filmorate.exception.IncorrectIdException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Event;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -66,11 +67,15 @@ public class UserController {
 
     }
 
-    @DeleteMapping("/{id}")
-    public User deleteUser() {
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+    @GetMapping("/{id}/feed")
+    public List<Event> getFeed(@PathVariable("id") Long userId) {
+        return userService.getFeed(userId);
     }
 
+    @DeleteMapping("/{userId}")
+    public void deleteUserById(@PathVariable Long userId) {
+        userService.deleteUserById(userId);
+    }
 
     // FRIENDS
     @PutMapping("{id}/friends/{friendId}")
@@ -116,6 +121,14 @@ public class UserController {
 
     }
 
+
+    // RECOMMENDATIONS
+    @GetMapping("{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable @Positive Long id) {
+
+        return userService.getRecommendations(id);
+
+    }
 
     // ERRORS HANDLING
     @ExceptionHandler({EmailLoginAlreadyUsed.class, FriendToYourselfException.class})

@@ -1,5 +1,9 @@
 package ru.yandex.practicum.filmorate.storage.like;
 
+import java.util.HashMap;
+import java.util.Map;
+
+
 public interface LikeStorage {
 
     // CRUD
@@ -7,6 +11,7 @@ public interface LikeStorage {
 
     boolean deleteLike(Long filmId, Long userId);
 
+    Map<Long, HashMap<Long, Double>> getLikesMatrix();
 
     // Checking
     boolean hasLike(Long filmId, Long userId);

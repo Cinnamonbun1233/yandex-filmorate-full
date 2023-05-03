@@ -4,11 +4,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.EmailLoginAlreadyUsed;
 import ru.yandex.practicum.filmorate.exception.ResourceNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.event.Event;
+import ru.yandex.practicum.filmorate.model.event.EventType;
+import ru.yandex.practicum.filmorate.model.event.Operation;
+import ru.yandex.practicum.filmorate.storage.event.EventDbStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
+import ru.yandex.practicum.filmorate.storage.like.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.utils.SlopeOnePredictor;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +25,9 @@ public class UserService {
 
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
+    private final FilmStorage filmStorage;
+    private final LikeStorage likeStorage;
+    private final EventDbStorage eventDbStorage;
 
     // USERS
     public User addUser(User user) {
@@ -104,6 +116,9 @@ public class UserService {
 
     }
 
+    public void deleteUserById(Long userId) {
+        userStorage.deleteUserById(userId);
+    }
 
     // FRIENDS
     public void addConnection(Long userId, Long friendId) {
@@ -124,7 +139,7 @@ public class UserService {
 
         // add connection
         friendStorage.addFriend(userId, friendId);
-
+        eventDbStorage.addEvent(EventType.FRIEND, Operation.ADD, userId, friendId);
     }
 
     public List<User> getUsersFriends(Long id) {
@@ -159,6 +174,12 @@ public class UserService {
 
     }
 
+    public List<Event> getFeed(Long userId) {
+        // checking
+        User user = getUser(userId);
+        return eventDbStorage.getFeed(user.getId());
+    }
+
     public void deleteConnection(Long userId, Long friendId) {
 
         // checking
@@ -183,6 +204,32 @@ public class UserService {
         // delete connection
         boolean connection1Deleted = friendStorage.deleteFriend(userId, friendId);
         assert connection1Deleted;
+        eventDbStorage.addEvent(EventType.FRIEND, Operation.REMOVE, userId, friendId);
+    }
+
+
+    // RECOMMENDATIONS
+    public List<Film> getRecommendations(Long userId) {
+
+        // checking
+        User user = userStorage.getUser(userId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User", userId);
+        }
+
+        // recommendations
+        Map<Long, HashMap<Long, Double>> likesMatrix = likeStorage.getLikesMatrix(); // film_id, user_id, rate
+        SlopeOnePredictor slopeOne = new SlopeOnePredictor(likesMatrix);
+        HashMap<Long, Double> predictedRate = slopeOne.getPrediction(userId); // film_id, rate
+
+        List<Long> recommendedFilmsId = predictedRate.entrySet()
+                .stream()
+                .filter(es -> es.getValue() > 0)
+                .map(Map.Entry::getKey)
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
+
+        return filmStorage.getFilms(recommendedFilmsId);
 
     }
 

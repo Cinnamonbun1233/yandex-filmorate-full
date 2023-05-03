@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @AutoConfigureTestDatabase
@@ -67,11 +68,11 @@ public class FilmDatabaseTests {
                 .hasFieldOrPropertyWithValue("name", "The Shawshank Redemption")
                 .hasFieldOrPropertyWithValue("description", "Nominated for 7 Oscars");
 
-        film1.setRate((byte)5);
+        film1.setRate((byte) 5);
 
         filmStorage.updateFilm(film1);
         assertThat(film1)
-                .hasFieldOrPropertyWithValue("rate", (byte)5);
+                .hasFieldOrPropertyWithValue("rate", (byte) 5);
 
         List<Film> allFilms = filmStorage.getFilms();
         assertThat(allFilms)
@@ -137,20 +138,20 @@ public class FilmDatabaseTests {
 
         likeStorage.addLike(2L, 1L);
 
-        assertThat(filmStorage.getMostPopularFilms(10).get(0))
+        assertThat(filmStorage.getMostPopularFilms(10, null, null).get(0))
                 .hasFieldOrPropertyWithValue("name", "The Godfather");
 
-        assertThat(filmStorage.getMostPopularFilms(10).get(1))
+        assertThat(filmStorage.getMostPopularFilms(10, null, null).get(1))
                 .hasFieldOrPropertyWithValue("name", "The Shawshank Redemption");
 
 
-        likeStorage.deleteLike(2L,1L);
+        likeStorage.deleteLike(2L, 1L);
         likeStorage.addLike(1L, 1L);
 
-        assertThat(filmStorage.getMostPopularFilms(10).get(0))
+        assertThat(filmStorage.getMostPopularFilms(10, null, null).get(0))
                 .hasFieldOrPropertyWithValue("name", "The Shawshank Redemption");
 
-        assertThat(filmStorage.getMostPopularFilms(10).get(1))
+        assertThat(filmStorage.getMostPopularFilms(10, null, null).get(1))
                 .hasFieldOrPropertyWithValue("name", "The Godfather");
 
         assertThat(likeStorage.hasLike(1L, 1L))
@@ -187,4 +188,17 @@ public class FilmDatabaseTests {
 
     }
 
+    @Test
+    public void deleteFilmTest() {
+        filmStorage.addFilm(Film.builder()
+                .name("The Shawshank Redemption")
+                .description("Nominated for 7 Oscars")
+                .releaseDate(LocalDate.of(1994, 9, 22))
+                .duration(144)
+                .mpa(Mpa.G)
+                .build());
+        filmStorage.deleteFilmById(1L);
+        List<Film> films = filmStorage.getFilms();
+        assertTrue(films.isEmpty());
+    }
 }
