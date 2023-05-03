@@ -30,10 +30,12 @@ public class ReviewLikeDbStorage implements ReviewLikeStorage {
     }
 
     public void deleteLike(long reviewId, long userId, LikeType type) {
-        String sql = String.format("DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND type = '%s'", type);
-        jdbcTemplate.update(sql, reviewId, userId);
+        String sql = "DELETE FROM review_like WHERE review_id = ? AND user_id = ? AND type = ?";
+        jdbcTemplate.update(sql, reviewId, userId, type.name());
     }
 
+
+    // PRIVATE
     private ReviewLike makeReviewLike(ResultSet rs) throws SQLException {
         return new ReviewLike(rs.getInt("review_id"),
                 rs.getInt("user_id"), LikeType.valueOf(rs.getString("type")));

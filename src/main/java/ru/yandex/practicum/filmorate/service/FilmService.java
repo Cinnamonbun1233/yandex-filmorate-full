@@ -315,8 +315,31 @@ public class FilmService {
     }
 
 
-    // PRIVATE
+    // SEARCH
+    public List<Film> search(String query, String[] by) {
+        String lowerCaseQuery = query.toLowerCase();
 
+        if (by.length < 1 || by.length > 2) {
+            throw new SearchIncorrectParametersException("Заданы неверные параметры поиска. " +
+                    "Корректны director и title в любом порядке и сочетании");
+        }
+        if (by.length == 1 &&
+                !(by[0].equals("title") || by[0].equals("director"))) {
+            throw new SearchIncorrectParametersException("Заданы неверные параметры поиска. " +
+                    "Корректны director и title в любом порядке и сочетании");
+        }
+        if (by.length == 2 &&
+                (!(by[0].equals("title") || by[0].equals("director")) ||
+                        !(by[1].equals("title") || by[1].equals("director")))) {
+            throw new SearchIncorrectParametersException("Заданы неверные параметры поиска. " +
+                    "Корректны director и title в любом порядке и сочетании");
+        }
+
+        return filmStorage.search(lowerCaseQuery, by);
+    }
+
+
+    // PRIVATE
     private void filmIsATwin(Film film) {
 
         boolean filmIsTwin = filmStorage.hasTwin(film);
@@ -421,29 +444,6 @@ public class FilmService {
             addGenre(Genre.builder().name("Боевик").build());
         }
 
-    }
-
-    // SEARCH
-    public List<Film> search(String query, String[] by) {
-        String lowerCaseQuery = query.toLowerCase();
-
-        if (by.length < 1 || by.length > 2) {
-            throw new SearchIncorrectParametersException("Заданы неверные параметры поиска. " +
-                    "Корректны director и title в любом порядке и сочетании");
-        }
-        if (by.length == 1 &&
-                !(by[0].equals("title") || by[0].equals("director"))) {
-            throw new SearchIncorrectParametersException("Заданы неверные параметры поиска. " +
-                    "Корректны director и title в любом порядке и сочетании");
-        }
-        if (by.length == 2 &&
-                (!(by[0].equals("title") || by[0].equals("director")) ||
-                        !(by[1].equals("title") || by[1].equals("director")))) {
-            throw new SearchIncorrectParametersException("Заданы неверные параметры поиска. " +
-                    "Корректны director и title в любом порядке и сочетании");
-        }
-
-        return filmStorage.search(lowerCaseQuery, by);
     }
 
 }

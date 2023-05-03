@@ -73,6 +73,7 @@ public class ReviewDbStorage implements ReviewStorage {
         jdbcTemplate.update(sql, id);
     }
 
+    // PRIVATE
     private Review makeReview(ResultSet rs) throws SQLException {
         long id = rs.getInt("id");
         return Review.builder()

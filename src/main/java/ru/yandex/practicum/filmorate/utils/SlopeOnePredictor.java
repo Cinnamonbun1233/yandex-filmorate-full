@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.utils;
 
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +25,6 @@ public class SlopeOnePredictor {
 		buildDifferencesMatrix();
 		buildPredictions();
 
-		// debug
-//		System.out.println("Slope One - Before the Prediction");
-//		printData(inputData);
-//		System.out.println("Slope One - With Predictions");
-//		printData(outputData);
-
 	}
 
 	// PUBLIC
@@ -56,11 +49,11 @@ public class SlopeOnePredictor {
 				for (Map.Entry<Long, Double> e2 : user.entrySet()) {
 					int oldCount = 0;
 					if (freq.get(e.getKey()).containsKey(e2.getKey())) {
-						oldCount = freq.get(e.getKey()).get(e2.getKey()).intValue();
+						oldCount = freq.get(e.getKey()).get(e2.getKey());
 					}
 					double oldDiff = 0.0;
 					if (diff.get(e.getKey()).containsKey(e2.getKey())) {
-						oldDiff = diff.get(e.getKey()).get(e2.getKey()).doubleValue();
+						oldDiff = diff.get(e.getKey()).get(e2.getKey());
 					}
 					double observedDiff = e.getValue() - e2.getValue();
 					freq.get(e.getKey()).put(e2.getKey(), oldCount + 1);
@@ -70,8 +63,8 @@ public class SlopeOnePredictor {
 		}
 		for (Long j : diff.keySet()) {
 			for (Long i : diff.get(j).keySet()) {
-				double oldValue = diff.get(j).get(i).doubleValue();
-				int count = freq.get(j).get(i).intValue();
+				double oldValue = diff.get(j).get(i);
+				int count = freq.get(j).get(i);
 				diff.get(j).put(i, oldValue / count);
 			}
 		}
@@ -90,10 +83,10 @@ public class SlopeOnePredictor {
 			for (Long j : e.getValue().keySet()) {
 				for (Long k : diff.keySet()) {
 					try {
-						double predictedValue = diff.get(k).get(j).doubleValue() + e.getValue().get(j).doubleValue();
-						double finalValue = predictedValue * freq.get(k).get(j).intValue();
+						double predictedValue = diff.get(k).get(j) + e.getValue().get(j);
+						double finalValue = predictedValue * freq.get(k).get(j);
 						uPred.put(k, uPred.get(k) + finalValue);
-						uFreq.put(k, uFreq.get(k) + freq.get(k).get(j).intValue());
+						uFreq.put(k, uFreq.get(k) + freq.get(k).get(j));
 					} catch (NullPointerException e1) {
 						double predictedValue = -1;
 					}
@@ -102,12 +95,11 @@ public class SlopeOnePredictor {
 			HashMap<Long, Double> clean = new HashMap<>();
 			for (Long j : uPred.keySet()) {
 				if (uFreq.get(j) > 0) {
-					clean.put(j, uPred.get(j).doubleValue() / uFreq.get(j).intValue());
+					clean.put(j, uPred.get(j) / uFreq.get(j));
 				}
 			}
 			for (Long j : items) {
 				if (e.getValue().containsKey(j)) {
-					//clean.put(j, e.getValue().get(j));
 					clean.remove(j);
 				} else if (!clean.containsKey(j)) {
 					clean.put(j, null);
@@ -116,22 +108,6 @@ public class SlopeOnePredictor {
 			outputData.put(e.getKey(), clean);
 		}
 
-	}
-
-	private void printData(Map<Long, HashMap<Long, Double>> data) {
-		for (Long user : data.keySet()) {
-			System.out.println("User #" + user + ":");
-			print(data.get(user));
-		}
-	}
-
-	private void print(HashMap<Long, Double> hashMap) {
-		DecimalFormat formatter = new DecimalFormat("#0.000");
-		for (Long j : hashMap.keySet()) {
-			Double predicionValue = hashMap.get(j);
-			String predicionValueString = (predicionValue != null ? formatter.format(predicionValue.doubleValue()) : "no prediction");
-			System.out.println(" Item #" + j + " --> " + predicionValueString);
-		}
 	}
 
 }

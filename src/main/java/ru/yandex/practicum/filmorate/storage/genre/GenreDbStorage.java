@@ -9,7 +9,10 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
@@ -105,6 +108,8 @@ public class GenreDbStorage implements GenreStorage {
 
     }
 
+
+    // PRIVATE
     private Genre makeGenre(ResultSet resultSet) throws SQLException {
 
         return Genre.builder()

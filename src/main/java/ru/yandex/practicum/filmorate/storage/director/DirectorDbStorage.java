@@ -105,6 +105,14 @@ public class DirectorDbStorage implements DirectorStorage {
 
     }
 
+    @Override
+    public void deleteDirector(Long id) {
+        String filmQuery = "DELETE FROM FILM_DIRECTOR WHERE DIRECTOR_ID = ?";
+        String directorQuery = "DELETE FROM director WHERE id = ?";
+        jdbcTemplate.update(filmQuery, id);
+        jdbcTemplate.update(directorQuery, id);
+    }
+
 
     // PRIVATE
     private Director makeDirector(ResultSet resultSet) throws SQLException {
@@ -121,11 +129,4 @@ public class DirectorDbStorage implements DirectorStorage {
         return resultSet.getLong("id");
     }
 
-    @Override
-    public void deleteDirector(Long id) {
-        String filmQuery = "DELETE FROM FILM_DIRECTOR WHERE DIRECTOR_ID = ?";
-        String directorQuery = "DELETE FROM director WHERE id = ?";
-        jdbcTemplate.update(filmQuery, id);
-        jdbcTemplate.update(directorQuery, id);
-    }
 }

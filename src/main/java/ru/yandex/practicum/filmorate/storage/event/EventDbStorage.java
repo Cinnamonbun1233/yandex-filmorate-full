@@ -24,11 +24,11 @@ public class EventDbStorage implements EventStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate).withTableName("EVENT")
                 .usingGeneratedKeyColumns("event_id");
 
-        Long id = simpleJdbcInsert.executeAndReturnKey(Map.of("timestamp", timestamp,
+        simpleJdbcInsert.execute(Map.of("timestamp", timestamp,
                 "user_id", userId,
                 "eventType", eventType.name(),
                 "operation", operation.name(),
-                "entity_id", entityId)).longValue();
+                "entity_id", entityId));
     }
 
     public List<Event> getFeed(Long userId) {
