@@ -11,8 +11,4 @@ A REST service built with Spring Boot and Maven, utilizing Lombok and interactin
 - JVM installed
 - Please note that the application uses an embedded H2 database. You can connect to the database using a client such as DBeaver.
 
-### ER diagram
-![filmorate ER diagram](src/docs/filmorate_er_diagram.png)
-
-
 
